@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root, [data-theme='dark'] {
+    --bg-base: 9 9 11;
+    --bg-surface: 24 24 27;
+    --bg-elevated: 5 5 5;
+    --accent: 59 130 246; 
+    --text-main: 255 255 255;
+    --text-muted: 163 163 163;
+  }
+
+  [data-theme='light'] {
+    --bg-base: 244 244 245;
+    --bg-surface: 255 255 255;
+    --bg-elevated: 228 228 231;
+    --accent: 59 130 246;
+    --text-main: 9 9 11;
+    --text-muted: 82 82 91;
+  }
+
+  [data-theme='cyberpunk'] {
+    --bg-base: 13 2 8;
+    --bg-surface: 32 5 20;
+    --bg-elevated: 10 1 6;
+    --accent: 0 255 65; 
+    --text-main: 255 255 255;
+    --text-muted: 0 143 17;
+  }
+
+  html, body {
+    background-color: rgb(var(--bg-base));
+    color: rgb(var(--text-main));
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+/* --- PARCHE DE FUERZA BRUTA CORREGIDO --- */
+
+.text-accent {
+  color: rgb(var(--accent)) !important;
+}
+
+.hover\:text-accent:hover {
+  color: rgb(var(--accent)) !important;
+}

@@ -1,0 +1,77 @@
+{
+  "productName": "Resonance",
+  "version": "1.0.0",
+  "identifier": "com.pablo.resonance",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "csp": "default-src 'self' tauri: http://localhost:1420; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://w.soundcloud.com https://www.youtube.com https://s.ytimg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' tauri: http://localhost:1420 ws://localhost:1421 https://ebcobonneuhtmaedkxdq.supabase.co https://*.soundcloud.com https://*.sndcdn.com https://*.youtube.com https://*.googlevideo.com https://*.googleapis.com https://pipedapi.kavin.rocks https://pipedapi.smnz.de https://pipedapi.tokhmi.xyz https://api.piped.projectsegfau.lt https://vid.puffyan.us https://invidious.flokinet.to https://invidious.lunar.icu https://yewtu.be https://lrclib.net https://accounts.google.com; frame-src https://w.soundcloud.com https://www.youtube.com https://accounts.google.com;",
+      "capabilities": [
+        {
+          "identifier": "resonance-network-override",
+          "windows": [
+            "*"
+          ],
+          "permissions": [
+            "http:default",
+            {
+              "identifier": "http:default",
+              "allow": [
+                {
+                  "url": "http://**"
+                },
+                {
+                  "url": "https://**"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "identifier": "default-window-capability",
+          "windows": [
+            "*"
+          ],
+          "permissions": [
+            "core:default",
+            "core:window:default",
+            "core:window:allow-create",
+            "core:window:allow-close",
+            "core:window:allow-center",
+            "core:window:allow-set-focus",
+            "core:window:allow-set-size",
+            "core:window:allow-set-title",
+            "core:window:allow-show",
+            "core:webview:default",
+            "core:webview:allow-create-webview-window",
+            "core:webview:allow-set-webview-focus",
+            "core:webview:allow-set-webview-size",
+            "core:webview:allow-webview-close",
+            "core:webview:allow-webview-show",
+            "opener:default"
+          ]
+        }
+      ]
+    }
+  },
+  "plugins": {
+    "http": null
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}
