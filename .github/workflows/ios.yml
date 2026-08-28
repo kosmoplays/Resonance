@@ -52,8 +52,9 @@ jobs:
           if [ -d "$APP_PATH" ]; then
             echo "Aplicación encontrada en: $APP_PATH"
             mkdir -p Payload
-            cp -R "$APP_PATH" Payload/
-            zip -qr Resonance.ipa Payload
+            # Importante: macOS usa symlinks internos en los archivos .app, cp y zip deben conservarlos (-a y -y)
+            cp -a "$APP_PATH" Payload/
+            zip -qry Resonance.ipa Payload
             echo "IPA_PATH=$PWD/Resonance.ipa" >> $GITHUB_ENV
           else
             echo "Directorio de build no encontrado."
