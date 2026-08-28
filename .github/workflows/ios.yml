@@ -28,7 +28,7 @@ jobs:
       - name: Compilar App (Hack sin firma)
         run: |
           cd src-tauri/gen/apple
-          xcodebuild -workspace *.xcworkspace -scheme * -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO clean build
+          xcodebuild -project resonance.xcodeproj -scheme resonance_iOS -configuration Release -sdk iphoneos CONFIGURATION_BUILD_DIR=build/Release-iphoneos CODE_SIGNING_ALLOWED=NO clean build
           mkdir -p Payload
           mv build/Release-iphoneos/*.app Payload/
           zip -r Resonance.ipa Payload
