@@ -2,9 +2,9 @@
 use discord_rich_presence::{activity, DiscordIpc, DiscordIpcClient};
 #[cfg(desktop)]
 use std::sync::Mutex;
-use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 #[cfg(desktop)]
-use tauri::State;
+use tauri::{Manager, State};
+use tauri::{WebviewUrl, WebviewWindowBuilder};
 
 #[cfg(desktop)]
 struct DiscordState {
@@ -106,12 +106,17 @@ pub fn run() {
                 app,
                 "main",
                 WebviewUrl::App("index.html".into()),
-            )
-            .title("Resonance")
-            .inner_size(1200.0, 800.0)
-            .min_inner_size(950.0, 600.0)
-            .resizable(true)
-            .fullscreen(false);
+            );
+
+            #[cfg(desktop)]
+            {
+                builder = builder
+                    .title("Resonance")
+                    .inner_size(1200.0, 800.0)
+                    .min_inner_size(950.0, 600.0)
+                    .resizable(true)
+                    .fullscreen(false);
+            }
 
             // Si ya existe la carpeta de soundcloud-desktop, la reutilizamos
             if let Some(data_dir) = shared_data_dir {
