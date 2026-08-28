@@ -1,7 +1,10 @@
 #[cfg(desktop)]
 use discord_rich_presence::{activity, DiscordIpc, DiscordIpcClient};
+#[cfg(desktop)]
 use std::sync::Mutex;
-use tauri::{Manager, State, WebviewUrl, WebviewWindowBuilder};
+use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
+#[cfg(desktop)]
+use tauri::State;
 
 #[cfg(desktop)]
 struct DiscordState {
@@ -69,17 +72,22 @@ pub fn run() {
     #[cfg(desktop)]
     let _ = discord_client.connect();
 
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_http::init())
-        #[cfg(desktop)]
-        .manage(DiscordState {
-            client: Mutex::new(Some(discord_client)),
-        })
-        #[cfg(desktop)]
-        .invoke_handler(tauri::generate_handler![set_discord_status])
+        .plugin(tauri_plugin_http::init());
+
+    #[cfg(desktop)]
+    {
+        builder = builder
+            .manage(DiscordState {
+                client: Mutex::new(Some(discord_client)),
+            })
+            .invoke_handler(tauri::generate_handler![set_discord_status]);
+    }
+
+    builder
         .setup(|app| {
             // 🔗 Compartir el almacenamiento del WebView con soundcloud-desktop
             // Esto hace que Resonance arranque con todos los tokens, sesión y datos
