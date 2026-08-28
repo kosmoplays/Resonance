@@ -1,0 +1,40 @@
+name: Compilar iOS
+on:
+  workflow_dispatch: 
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Preparar proyecto iOS
+        run: npm run tauri ios init
+        continue-on-error: true
+
+      - name: Compilar App (Hack sin firma)
+        run: |
+          cd src-tauri/gen/apple
+          xcodebuild -workspace *.xcworkspace -scheme * -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO clean build
+          mkdir -p Payload
+          mv build/Release-iphoneos/*.app Payload/
+          zip -r Resonance.ipa Payload
+
+      - name: Guardar archivo .ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: Resonance-App
+          path: src-tauri/gen/apple/Resonance.ipa
