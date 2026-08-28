@@ -1,3 +1,5 @@
+import { type } from '@tauri-apps/plugin-os';
+const isMobile = type() === 'ios' || type() === 'android';
 import { useEffect, useRef, useState, useCallback } from "react";
 import { fetch as tauriFetch } from '@tauri-apps/plugin-http';
 import { usePlayerStore, Track } from '../store/usePlayerStore';
