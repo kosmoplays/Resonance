@@ -1,3 +1,5 @@
+import { type } from '@tauri-apps/plugin-os';
+const isMobile = type() === 'ios' || type() === 'android';
 import { SkipBack, SkipForward, Volume2, VolumeX, Shuffle, Repeat, Repeat1, PanelRight, AudioWaveform, ListMusic, Heart, Loader2, Headphones, Mic2, Menu } from "lucide-react";
 import { usePlayerStore } from "../store/usePlayerStore";
 import { PictureInPicture2, Scissors } from "lucide-react";
@@ -99,9 +101,9 @@ export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togg
            handleSeek={handleSeek} 
         />
       )}
-      <footer className="h-[90px] flex-shrink-0 w-full bg-elevated border-t border-white/5 flex items-center px-6 z-50">
+      <footer className={`flex-shrink-0 w-full bg-elevated border-t border-white/5 flex items-center z-50 ${isMobile ? 'h-[75px] px-3' : 'h-[90px] px-6'}`}>
       
-      <div className="w-1/3 flex items-center min-w-0 pr-6">
+      <div className={`${isMobile ? 'flex-1' : 'w-1/3'} flex items-center min-w-0 pr-2`}>
         {currentTrack ? (
           <>
             <img src={currentTrack.artwork_url?.replace('-large', '-t50x50') || currentTrack.user?.avatar_url?.replace('-large', '-t50x50') || 'https://placehold.co/50x50/1a1a1a/333333?text=RN'} className="w-14 h-14 object-cover rounded shadow-md mr-4 flex-shrink-0" alt="" />
@@ -136,14 +138,16 @@ export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togg
         )}
       </div>
       
-      <div className="w-1/3 flex flex-col items-center justify-center">
-        <div className="flex items-center gap-6 mb-2">
-          <button
-            onClick={toggleShuffle}
-            className={`transition-colors flex-shrink-0 ${isShuffle ? 'text-[#3b82f6] drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'text-neutral-400 hover:text-white active:text-[#3b82f6]'}`}
-          >
-            <Shuffle size={20} />
-          </button>
+      <div className={`${isMobile ? 'flex flex-row items-center gap-2' : 'w-1/3 flex flex-col items-center justify-center'}`}>
+        <div className={`flex items-center gap-6 ${isMobile ? 'mb-0' : 'mb-2'}`}>
+          {!isMobile && (
+            <button
+              onClick={toggleShuffle}
+              className={`transition-colors flex-shrink-0 ${isShuffle ? 'text-[#3b82f6] drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'text-neutral-400 hover:text-white active:text-[#3b82f6]'}`}
+            >
+              <Shuffle size={20} />
+            </button>
+          )}
 <button 
             onClick={canGoBack ? playPrevious : undefined} 
             disabled={!canGoBack}
@@ -167,12 +171,14 @@ export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togg
             )}
           </button>
           <button onClick={playNext} className="text-neutral-400 hover:text-white active:text-[#3b82f6] transition-colors"><SkipForward size={20} fill="currentColor" /></button>
-          <button
-            onClick={cycleLoopMode}
-            className={`transition-colors relative ${loopMode > 0 ? 'text-[#3b82f6] drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]' : 'text-neutral-400 hover:text-white active:text-[#3b82f6]'}`}
-          >
-            {loopMode === 2 ? <Repeat1 size={18} /> : <Repeat size={18} />}
-          </button>
+          {!isMobile && (
+            <button
+              onClick={cycleLoopMode}
+              className={`transition-colors relative ${loopMode > 0 ? 'text-[#3b82f6] drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]' : 'text-neutral-400 hover:text-white active:text-[#3b82f6]'}`}
+            >
+              {loopMode === 2 ? <Repeat1 size={18} /> : <Repeat size={18} />}
+            </button>
+          )}
         </div>
         
         <div className="flex items-center gap-3 w-full max-w-md text-[11px] text-neutral-400 font-medium">
@@ -202,7 +208,8 @@ export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togg
         </div>
       </div>
 
-      <div className="w-1/3 flex justify-end items-center gap-4 pr-4 text-neutral-400">
+      {!isMobile && (
+        <div className="w-1/3 flex justify-end items-center gap-4 pr-4 text-neutral-400">
           {/* DOCK EXPANDIBLE (Expansión lateral hacia la Izquierda) */}
           <div className="relative group flex items-center justify-end z-40">
             
@@ -324,6 +331,7 @@ export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togg
           />
         </div>
       </div>
+      )}
 
       <audio ref={audioRef} className="hidden" />
       

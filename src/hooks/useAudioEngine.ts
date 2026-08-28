@@ -182,8 +182,7 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
 
             // 2. FALLBACK DE EMERGENCIA (Caballo de Troya original si fallan los nodos o hay latencia)
             console.log("⚠️ [YOUTUBE] Extracción pura falló o fue lenta. Cayendo al Caballo de Troya (Iframe)...");
-            if (isMobile) { console.warn('Bloqueado en movil'); window.dispatchEvent(new CustomEvent('show-toast', { detail: { msg: 'Video bloqueado en movil', type: 'error' } })); return; }
-              setUseWidget(true);
+            setUseWidget(true);
             activeWidgetRef.current = 'youtube';
 
             if (ytWidgetRef.current && ytReadyRef.current) {
@@ -227,12 +226,11 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
           } catch (err) { console.warn("⚠ Conexión nativa rechazada."); }
         }
 
-        if (latestTrackIdRef.current === track.id) {
-          console.log("🛡 Pista bloqueada por DRM. Inyectando en Caballo de Troya (Widget SC)...");
-          if (isMobile) { console.warn('Bloqueado en movil'); window.dispatchEvent(new CustomEvent('show-toast', { detail: { msg: 'Pista bloqueada (DRM) en movil', type: 'error' } })); return; }
+          if (latestTrackIdRef.current === track.id) {
+            console.log("⚠️ Pista bloqueada por DRM. Inyectando en Caballo de Troya (Widget SC)...");
             setUseWidget(true);
-          activeWidgetRef.current = 'soundcloud';
-        }
+            activeWidgetRef.current = 'soundcloud';
+          }
      } catch (error) {
         console.error("❌ Error fatal en playTrack:", error);
         setIsAudioLoading(false);

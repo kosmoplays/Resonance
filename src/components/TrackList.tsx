@@ -1,4 +1,6 @@
-import { Play, Volume2, Cloud, Heart, HelpCircle, ChevronDown, ChevronUp, Unplug, X, HardDrive } from "lucide-react";
+import { type } from '@tauri-apps/plugin-os';
+const isMobile = type() === 'ios' || type() === 'android';
+import { Play, Volume2, Cloud, Heart, HelpCircle, ChevronDown, ChevronUp, Unplug, X, HardDrive, MoreVertical } from "lucide-react";
 import { useState } from "react";
 import { usePlayerStore } from "../store/usePlayerStore";
 
@@ -98,7 +100,7 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
 
               <button
                  onClick={(e) => { e.stopPropagation(); toggleLike(track); }}
-                 className={`p-2 mx-2 transition-all ${isTrackLiked(track) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} focus:opacity-100`}
+                 className={`p-2 transition-all ${isTrackLiked(track) || isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} focus:opacity-100`}
                  title="Me Gusta"
                >
                  <Heart
@@ -107,8 +109,23 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
                  />
                </button>
 
+                {/* BOTÓN DE MENÚ CONTEXTUAL (SOLO MÓVIL) */}
+                {isMobile && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setContextMenu({ visible: true, x: e.pageX, y: e.pageY, track });
+                    }}
+                    className="p-2 mr-2 transition-all opacity-100 text-neutral-400 focus:opacity-100"
+                    title="Opciones"
+                  >
+                    <MoreVertical size={16} />
+                  </button>
+                )}
+
                 {/* 🛡️ BOTÓN DE ELIMINACIÓN DE PISTA (Solo visible en Playlists propias) */}
-                {onRemoveTrack && (
+                {onRemoveTrack && !isMobile && (
                   <button
                     onClick={(e) => { e.stopPropagation(); onRemoveTrack(track.id); }}
                     className="p-2 mr-2 transition-all opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-neutral-500 hover:text-red-400 rounded-full flex-shrink-0"
