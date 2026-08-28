@@ -1,38 +1,63 @@
-name: Compilar iOS
+name: Build iOS App (Sideloadly)
+
 on:
-  workflow_dispatch: 
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-ios:
     runs-on: macos-latest
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Instalar Node.js
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-
-      - name: Instalar Rust
+          node-version: '20'
+          
+      - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-apple-ios
+          targets: aarch64-apple-ios, x86_64-apple-ios, aarch64-apple-ios-sim
 
-      - name: Instalar dependencias
+      - name: Install frontend dependencies
         run: npm install
 
-      - name: Preparar proyecto iOS
+      - name: Initialize iOS project
         run: npx tauri ios init
 
-      - name: Compilar App (Tauri Build)
+      - name: Build Tauri iOS App (Unsigned)
         run: |
-          npx tauri ios build -- CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
-          mkdir -p Payload
-          find src-tauri/gen/apple -type d -name "Resonance.app" -exec cp -R {} Payload/ \;
-          zip -r Resonance.ipa Payload
+          # Exportamos variables para saltar la firma de Apple
+          export CODE_SIGNING_ALLOWED=NO
+          export CODE_SIGNING_REQUIRED=NO
+          export CODE_SIGNING_IDENTITY=""
+          
+          # Compilamos la aplicación
+          npx tauri ios build
 
-      - name: Guardar archivo .ipa
+      - name: Generate .ipa Payload
+        run: |
+          # Buscar la carpeta generada por Xcode
+          BUILD_DIR=$(find src-tauri/gen/apple/build -type d -name "Release-iphoneos" | head -n 1)
+          if [ -d "$BUILD_DIR" ]; then
+            cd "$BUILD_DIR"
+            mkdir -p Payload
+            cp -R *.app Payload/
+            zip -qr Resonance.ipa Payload
+            echo "IPA_PATH=$PWD/Resonance.ipa" >> $GITHUB_ENV
+          else
+            echo "Directorio de build no encontrado."
+            exit 1
+          fi
+
+      - name: Upload iOS Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Resonance-App
-          path: Resonance.ipa
+          name: Resonance-iOS-IPA
+          path: ${{ env.IPA_PATH }}
+          retention-days: 3
