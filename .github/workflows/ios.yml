@@ -32,10 +32,14 @@ jobs:
 
       - name: Build Tauri iOS App (Unsigned)
         run: |
-          # Exportamos variables para saltar la firma de Apple
-          export CODE_SIGNING_ALLOWED=NO
-          export CODE_SIGNING_REQUIRED=NO
-          export CODE_SIGNING_IDENTITY=""
+          # Creamos un interceptor para xcodebuild que añade flags de firma nula obligatorios
+          mkdir -p .github/bin
+          echo '#!/bin/bash' > .github/bin/xcodebuild
+          echo 'exec /usr/bin/xcodebuild "$@" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGNING_IDENTITY=""' >> .github/bin/xcodebuild
+          chmod +x .github/bin/xcodebuild
+          
+          # Añadimos nuestro xcodebuild falso al PATH para que Tauri lo use
+          export PATH="$PWD/.github/bin:$PATH"
           
           # Compilamos la aplicación
           npx tauri ios build
