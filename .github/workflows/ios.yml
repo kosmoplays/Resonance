@@ -32,22 +32,19 @@ jobs:
 
       - name: Build Tauri iOS App (Unsigned)
         run: |
-          # Creamos un interceptor para xcodebuild que añade flags de firma nula obligatorios
-          mkdir -p .github/bin
-          echo '#!/bin/bash' > .github/bin/xcodebuild
-          echo 'exec /usr/bin/xcodebuild "$@" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGNING_IDENTITY=""' >> .github/bin/xcodebuild
-          chmod +x .github/bin/xcodebuild
-          
-          # Añadimos nuestro xcodebuild falso al PATH para que Tauri lo use
-          export PATH="$PWD/.github/bin:$PATH"
-          
-          # Compilamos la aplicación (Fallará al exportar el IPA porque no hay firma, pero el .app ya estará construido)
+          # First run tauri ios build to prepare the rust side and project (it will fail at codesign, which is fine)
           npx tauri ios build || true
+          
+          echo "Buscando proyecto Xcode..."
+          cd src-tauri/gen/apple
+          
+          # Force build with Xcode directly
+          xcodebuild -project *.xcodeproj -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGNING_IDENTITY="" || true
 
       - name: Generate .ipa Payload
         run: |
-          # Buscar la carpeta generada por Xcode en DerivedData
-          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "Resonance.app" | grep -i "release-iphoneos" | head -n 1)
+          # Buscar la carpeta generada por Xcode
+          APP_PATH=$(find src-tauri/gen/apple ~/Library/Developer/Xcode/DerivedData -type d -name "*.app" 2>/dev/null | grep -i "iphoneos" | head -n 1)
           
           if [ -d "$APP_PATH" ]; then
             echo "Aplicación encontrada en: $APP_PATH"
@@ -67,3 +64,6 @@ jobs:
           name: Resonance-iOS-IPA
           path: ${{ env.IPA_PATH }}
           retention-days: 3
+
+
+
