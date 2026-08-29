@@ -8,10 +8,12 @@ import { ContextMenu } from "./ContextMenu";
 import { TrackList } from "./TrackList";
 import { ArtistGrid } from "./ArtistGrid";
 import { ProfileHeader } from "./ProfileHeader";
+import { useMobile } from "../hooks/useMobile";
 export function MainContent({
   isLoadingTracks, isSearching, playTrack, viewTitle, analyserRef,
   useWidget, openArtistProfile, likes, scLikes, ytLikes, toggleLike, removeLikeExternal, resonancePlaylists,
   addTrackToPlaylist, removeTrackFromPlaylist, follows, toggleFollow, goBack, openPlaylist, loadMoreYtLikes, deletedHistory, recoverTrack }: any) {
+  const isMobile = useMobile();
   const { viewTracks, viewUsers, viewPlaylists, currentTrack, isPlaying } = usePlayerStore();
 
   const isProfile = viewTitle.startsWith('Perfil:');
@@ -141,7 +143,7 @@ export function MainContent({
       <main className="flex-1 flex flex-col min-w-0 bg-base relative overflow-hidden">
         
         {/* FLECHA DE RETROCESO FIJA ABSOLUTA (INMÓVIL AL SCROLL) */}
-        {viewTitle !== "Inicio" && (
+        {!isMobile && viewTitle !== "Inicio" && (
           <button 
             onClick={goBack} 
             className="absolute top-6 left-8 z-50 w-12 h-12 flex items-center justify-center bg-black/40 hover:bg-[#3b82f6]/90 text-white rounded-full transition-all duration-300 backdrop-blur-xl border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.6)] group hover:scale-105"
@@ -200,7 +202,7 @@ export function MainContent({
         ) : viewTitle === "Mi Perfil" ? (
           <ProfileView likes={likes} resonancePlaylists={resonancePlaylists} follows={follows} />
         ) : viewTitle === "Artistas Seguidos" ? (
-          <div className="w-full max-w-5xl mx-auto px-10 pt-16 pb-24 animate-in fade-in duration-500">
+          <div className="w-full max-w-5xl mx-auto px-4 md:px-10 pt-6 md:pt-16 pb-24 animate-in fade-in duration-500">
             <header className="mb-8 border-b border-white/5 pb-8">
               <h1 className="text-5xl font-black text-white tracking-tight mb-4 flex items-center gap-4 drop-shadow-xl">
                 <User className="text-emerald-400" size={48} />
@@ -453,7 +455,7 @@ export function MainContent({
                         <div className="flex items-center text-[11px] font-bold text-neutral-500 uppercase tracking-[0.15em] border-b border-white/10 pb-3 mb-4 px-4 relative z-10">
                           <span className="w-10 text-center">#</span>
                           <span className="flex-1 ml-6">Obra y Autor</span>
-                          <span className="w-48 text-right pr-4">Reproducciones</span>
+                          <span className="hidden md:block w-48 text-right pr-4">Reproducciones</span>
                         </div>
                         
                         <div className="relative z-10">
@@ -702,7 +704,7 @@ export function MainContent({
                       <div className="flex items-center text-xs font-bold text-neutral-500 uppercase tracking-wider border-b border-white/5 pb-3 mb-4 px-4">
                         <span className="w-10 text-center">#</span>
                         <span className="flex-1 ml-6">Obra y Autor</span>
-                        <span className="w-48 text-right pr-4">Reproducciones</span>
+                        <span className="hidden md:block w-48 text-right pr-4">Reproducciones</span>
                       </div>
                       
                       <TrackList
@@ -771,6 +773,7 @@ export function MainContent({
       </main>
   );
 }
+
 
 
 

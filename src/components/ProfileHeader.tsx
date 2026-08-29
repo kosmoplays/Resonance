@@ -83,8 +83,8 @@ export function ProfileHeader({ profileUser, toggleFollow, follows, onPlay, onRe
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-base/90 via-base/40 to-transparent" />
       
       {/* Info del Artista Nivel AAA */}
-      <div className="flex items-center gap-10 w-full max-w-5xl mx-auto z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
-        <div className="w-56 h-56 rounded-full overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.8)] ring-[4px] ring-white/20 bg-neutral-900 flex-shrink-0 relative group">
+      <div className="flex flex-col md:flex-row items-center md:items-end text-center md:text-left gap-6 md:gap-10 w-full max-w-5xl mx-auto z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+        <div className="w-40 h-40 md:w-56 md:h-56 rounded-full overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.8)] ring-[4px] ring-white/20 bg-neutral-900 flex-shrink-0 relative group mx-auto md:mx-0">
           <img
             src={profileUser?.avatar_url?.replace('-large', '-t500x500') || 'https://placehold.co/500x500/1a1a1a/333333?text=USER'}
             alt={profileUser.username}
@@ -92,10 +92,10 @@ export function ProfileHeader({ profileUser, toggleFollow, follows, onPlay, onRe
           />
         </div>
         
-        <div className="flex flex-col gap-3 w-full max-w-3xl">
+        <div className="flex flex-col items-center md:items-start gap-3 w-full max-w-3xl">
           
           {/* Píldoras de Estadísticas e Insignias Híbridas */}
-          <div className="flex flex-wrap items-center gap-3 mb-1">
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-1">
             <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-md border border-white/10 shadow-lg">
               {isHybrid ? 'Artista Híbrido' : 'Artista Verificado'}
             </span>
@@ -108,7 +108,7 @@ export function ProfileHeader({ profileUser, toggleFollow, follows, onPlay, onRe
           </div>
 
           {/* Título Principal */}
-          <h1 className="text-6xl sm:text-7xl md:text-8xl font-black text-white flex items-center gap-4 drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] tracking-tighter -ml-1 line-clamp-2 leading-none">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white flex items-center justify-center md:justify-start gap-4 drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] tracking-tighter -ml-1 line-clamp-2 leading-none">
             {profileUser?.username || "Artista Desconocido"}
             {(profileUser?.verified || profileUser?.badges?.verified) && (
               <BadgeCheck size={48} className={`flex-shrink-0 drop-shadow-lg transition-colors ${

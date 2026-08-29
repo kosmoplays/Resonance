@@ -1,13 +1,14 @@
-import { type } from '@tauri-apps/plugin-os';
-const isMobile = type() === 'ios' || type() === 'android';
+import { useMobile } from '../hooks/useMobile';
 import { SkipBack, SkipForward, Volume2, VolumeX, Shuffle, Repeat, Repeat1, PanelRight, AudioWaveform, ListMusic, Heart, Loader2, Headphones, Mic2, Menu } from "lucide-react";
 import { usePlayerStore } from "../store/usePlayerStore";
 import { PictureInPicture2, Scissors } from "lucide-react";
 import { toggleMiniPlayerWindow } from "../lib/windowUtils";
 import { CutEditor } from "./CutEditor";
-import { useRef, useEffect, useState } from "react";;
+import { useRef, useEffect, useState } from "react";
+import { AutoScrollText } from "./AutoScrollText";
 
 export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togglePlay, handleSeek, setIsSeeking, useWidget, likes, toggleLike, isAudioLoading, openArtistProfile  }: any) {  
+  const isMobile = useMobile();
   const {
     currentTrack, isPlaying, volume, progress, duration, isShuffle, loopMode,
     setVolume, toggleShuffle, cycleLoopMode, setProgress, activePanel, toggleDetails, toggleQueue, trackCuts, setTrackCuts, setIsMiniPlayer
@@ -101,112 +102,143 @@ export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togg
            handleSeek={handleSeek} 
         />
       )}
-      <footer className={`flex-shrink-0 w-full bg-elevated border-t border-white/5 flex items-center z-50 ${isMobile ? 'h-[75px] px-3' : 'h-[90px] px-6'}`}>
-      
-      <div className={`${isMobile ? 'flex-1' : 'w-1/3'} flex items-center min-w-0 pr-2`}>
-        {currentTrack ? (
-          <>
-            <img src={currentTrack.artwork_url?.replace('-large', '-t50x50') || currentTrack.user?.avatar_url?.replace('-large', '-t50x50') || 'https://placehold.co/50x50/1a1a1a/333333?text=RN'} className="w-14 h-14 object-cover rounded shadow-md mr-4 flex-shrink-0" alt="" />
-            <div className="flex flex-col min-w-0">
-              <p className="font-bold text-sm text-neutral-100 truncate hover:underline cursor-pointer">{currentTrack.title}</p>
-              <p 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (openArtistProfile && currentTrack.user) openArtistProfile(currentTrack.user);
-                }}
-                className="text-xs text-neutral-400 truncate hover:underline cursor-pointer mt-0.5 transition-colors"
-              >
-                {currentTrack.user?.username}
-              </p>
-            </div>
+      <footer className={`flex-shrink-0 w-full bg-elevated border-t border-white/5 flex z-50 ${isMobile ? 'flex-col justify-center h-[130px] px-4 gap-2' : 'items-center h-[90px] px-6'}`}>
+        
+        {/* LADO IZQUIERDO: Info de pista */}
+        <div className={`${isMobile ? 'w-full flex items-center justify-between mb-1' : 'w-1/3 flex items-center min-w-0 pr-2'}`}>
+          {currentTrack ? (
+            <>
+              <div className="flex items-center min-w-0 flex-1">
+                <img src={currentTrack.artwork_url?.replace('-large', '-t50x50') || currentTrack.user?.avatar_url?.replace('-large', '-t50x50') || 'https://placehold.co/50x50/1a1a1a/333333?text=RN'} className="w-12 h-12 md:w-14 md:h-14 object-cover rounded shadow-md mr-3 md:mr-4 flex-shrink-0" alt="" />
+                <div className="flex flex-col min-w-0 flex-1 pr-2">
+                  {isMobile ? (
+                    <AutoScrollText>
+                      <span className="font-bold text-sm text-neutral-100">{currentTrack.title}</span>
+                      {currentTrack.user?.username && (
+                        <>
+                          <span className="mx-2 text-neutral-500">•</span>
+                          <span className="text-sm text-neutral-400 font-normal">{currentTrack.user.username}</span>
+                        </>
+                      )}
+                    </AutoScrollText>
+                  ) : (
+                    <>
+                      <AutoScrollText>
+                        <p className="font-bold text-sm text-neutral-100 hover:underline cursor-pointer pr-4">{currentTrack.title}</p>
+                      </AutoScrollText>
+                      <AutoScrollText speed={0.35}>
+                        <p 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (openArtistProfile && currentTrack.user) openArtistProfile(currentTrack.user);
+                          }}
+                          className="text-xs text-neutral-400 hover:underline cursor-pointer mt-0.5 transition-colors pr-4"
+                        >
+                          {currentTrack.user?.username}
+                        </p>
+                      </AutoScrollText>
+                    </>
+                  )}
+                </div>
+              </div>
               <button 
                 onClick={() => toggleLike(currentTrack)} 
-                className="ml-4 p-2 rounded-full hover:bg-white/5 transition-colors group"
-                title="Añadir a Tus Me Gusta"
+                className={`p-2 rounded-full transition-all active:scale-90 flex-shrink-0 ${likes?.some((t: any) => t.id === currentTrack.id) ? 'text-[#3b82f6] hover:scale-110 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'text-neutral-400 hover:text-white hover:bg-white/10'}`}
               >
-                <Heart 
-                  size={18} 
-                  className={likes?.some((t: any) => t.id === currentTrack.id) ? "text-[#3b82f6] fill-[#3b82f6] drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" : "text-neutral-500 group-hover:text-white transition-colors"} 
-                />
+                <Heart size={isMobile ? 18 : 20} fill={likes?.some((t: any) => t.id === currentTrack.id) ? "currentColor" : "none"} />
               </button>
             </>
           ) : (
-          <div className="flex items-center text-neutral-600 text-sm font-medium">
-            <div className="w-14 h-14 bg-white/5 rounded mr-4 flex items-center justify-center"><AudioWaveform size={20} /></div>
-            Esperando pista
-          </div>
-        )}
-      </div>
-      
-      <div className={`${isMobile ? 'flex flex-row items-center gap-2' : 'w-1/3 flex flex-col items-center justify-center'}`}>
-        <div className={`flex items-center gap-6 ${isMobile ? 'mb-0' : 'mb-2'}`}>
-          {!isMobile && (
+            <div className="flex items-center min-w-0">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded bg-[#3b82f6]/10 border border-[#3b82f6]/20 mr-3 md:mr-4 flex items-center justify-center flex-shrink-0 shadow-inner">
+                <AudioWaveform size={20} className="text-[#3b82f6] opacity-70" />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <p className="font-bold text-sm text-neutral-300 truncate">Esperando música...</p>
+                <p className="text-xs text-neutral-500 truncate mt-0.5 tracking-widest uppercase">Resonance Engine</p>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* CENTRO: Controles y Progreso */}
+        <div className={`${isMobile ? 'w-full flex flex-col gap-1' : 'w-1/3 flex flex-col items-center justify-center'}`}>
+          <div className={`flex items-center justify-center ${isMobile ? 'gap-4 mb-1' : 'gap-6 mb-2'}`}>
+            {isMobile && (
+              <button
+                onClick={() => currentTrack && setShowCutEditor(true)}
+                className={`transition-colors flex-shrink-0 ${showCutEditor ? 'text-[#ff5500]' : 'text-neutral-400 hover:text-white'}`}
+              >
+                <Scissors size={18} />
+              </button>
+            )}
             <button
               onClick={toggleShuffle}
               className={`transition-colors flex-shrink-0 ${isShuffle ? 'text-[#3b82f6] drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'text-neutral-400 hover:text-white active:text-[#3b82f6]'}`}
             >
-              <Shuffle size={20} />
+              <Shuffle size={18} />
             </button>
-          )}
-<button 
-            onClick={canGoBack ? playPrevious : undefined} 
-            disabled={!canGoBack}
-            className={`transition-colors flex-shrink-0 ${canGoBack ? 'text-neutral-400 hover:text-white active:text-[#3b82f6] cursor-pointer' : 'text-neutral-700 cursor-not-allowed opacity-50'}`}
-          >
-            <SkipBack size={20} fill="currentColor" />
-          </button>          
-          
-          <button onClick={togglePlay} className="w-10 h-10 flex items-center justify-center bg-white group active:bg-[#3b82f6] active:scale-95 rounded-full hover:scale-105 transition-all shadow-md">
-            {showSpinner ? (
-              <Loader2 size={20} className="animate-spin text-neutral-800 group-active:text-white transition-colors" />
-            ) : isPlaying ? (
-              <svg viewBox="0 0 24 24" fill="black" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 group-active:fill-white group-active:stroke-white transition-colors" style={{ width: '20px', height: '20px', minWidth: '20px', minHeight: '20px' }}>
-                <rect x="6" y="4" width="4" height="16"></rect>
-                <rect x="14" y="4" width="4" height="16"></rect>
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" fill="black" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 ml-1 group-active:fill-white group-active:stroke-white transition-colors" style={{ width: '20px', height: '20px', minWidth: '20px', minHeight: '20px' }}>
-                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-              </svg>
-            )}
-          </button>
-          <button onClick={playNext} className="text-neutral-400 hover:text-white active:text-[#3b82f6] transition-colors"><SkipForward size={20} fill="currentColor" /></button>
-          {!isMobile && (
+            <button onClick={canGoBack ? playPrevious : undefined} className={`text-neutral-400 hover:text-white active:text-[#3b82f6] transition-colors ${!canGoBack && 'opacity-50 pointer-events-none'}`}><SkipBack size={20} fill="currentColor" /></button>
+            
+            <button 
+              onClick={togglePlay} 
+              className={`w-10 h-10 flex items-center justify-center bg-white text-black rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] ${isAudioLoading ? 'opacity-50 pointer-events-none' : ''}`}
+            >
+              {showSpinner ? <Loader2 size={20} className="animate-spin text-neutral-500" /> : (
+                isPlaying ? <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                : <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              )}
+            </button>
+            
+            <button onClick={playNext} className="text-neutral-400 hover:text-white active:text-[#3b82f6] transition-colors"><SkipForward size={20} fill="currentColor" /></button>
             <button
               onClick={cycleLoopMode}
-              className={`transition-colors relative ${loopMode > 0 ? 'text-[#3b82f6] drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]' : 'text-neutral-400 hover:text-white active:text-[#3b82f6]'}`}
+              className={`transition-colors relative flex-shrink-0 ${loopMode > 0 ? 'text-[#3b82f6] drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]' : 'text-neutral-400 hover:text-white active:text-[#3b82f6]'}`}
             >
               {loopMode === 2 ? <Repeat1 size={18} /> : <Repeat size={18} />}
+              {loopMode > 0 && <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#3b82f6]" />}
             </button>
-          )}
-        </div>
-        
-        <div className="flex items-center gap-3 w-full max-w-md text-[11px] text-neutral-400 font-medium">
-          <span className="w-10 text-right">{formatTime(progress)}</span>
-          
-          <div className="flex-1 relative group flex items-center h-4 cursor-pointer">
-            <div className="absolute w-full h-1 bg-neutral-800 rounded-full overflow-hidden pointer-events-none">
-              <div
-                className="h-full bg-white group-hover:bg-accent transition-all duration-100 ease-linear"
-                style={{ width: `${(duration > 0 ? (progress / duration) * 100 : 0)}%` }}
-              />
-            </div>
-            <div
-              className="absolute h-3 w-3 bg-white rounded-full shadow-[0_0_8px_rgba(59,130,246,0.8)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20"
-              style={{ left: `calc(${(progress / duration) * 100 || 0}% - 6px)` }}
-            />
-            <input
-              type="range" min="0" max={duration || 100} step="0.01" value={progress}
-              onMouseDown={() => setIsSeeking(true)}
-              onChange={(e) => setProgress(Number(e.target.value))}
-              onMouseUp={(e) => handleSeek(Number(e.currentTarget.value))}
-              className="absolute w-full h-full opacity-0 cursor-pointer z-10 m-0 p-0"
-            />
+            {isMobile && (
+              <button
+                onClick={() => usePlayerStore.setState({ activePanel: ((activePanel as string) === 'lyrics' ? 'none' : 'lyrics') } as any)}
+                className={`transition-colors flex-shrink-0 ${activePanel === 'lyrics' ? 'text-[#10b981]' : 'text-neutral-400 hover:text-white'}`}
+              >
+                <Mic2 size={18} />
+              </button>
+            )}
           </div>
           
-          <span className="w-10">{formatTime(duration)}</span>
+          <div className="flex items-center gap-3 w-full max-w-md mx-auto text-[10px] md:text-[11px] text-neutral-400 font-medium">
+            <span className="w-8 md:w-10 text-right">{formatTime(progress)}</span>
+            
+            <div className="flex-1 relative group flex items-center h-4 cursor-pointer">
+              <div className="absolute w-full h-1 bg-neutral-800 rounded-full overflow-hidden pointer-events-none">
+                <div
+                  className="h-full bg-white group-hover:bg-[#3b82f6] transition-all duration-100 ease-linear"
+                  style={{ width: `${duration > 0 ? (progress / duration) * 100 : 0}%` }}
+                />
+              </div>
+              <input
+                type="range" min="0" max={duration || 100} value={progress || 0}
+                onChange={(e) => setProgress(Number(e.target.value))}
+                onMouseUp={(e) => handleSeek(Number(e.currentTarget.value))}
+                onMouseDown={() => setIsSeeking(true)}
+                className="absolute w-full h-full opacity-0 cursor-pointer z-10 m-0 p-0"
+              />
+            </div>
+            
+            <span className="w-10">{formatTime(duration)}</span>
+            {isMobile && (
+              <button
+                onClick={() => usePlayerStore.setState({ activePanel: (activePanel === 'queue' ? 'none' : 'queue') } as any)}
+                className={`p-1.5 transition-colors flex-shrink-0 ${activePanel === 'queue' ? 'text-[#3b82f6]' : 'text-neutral-400 hover:text-white'}`}
+                title="Cola y Opciones"
+              >
+                <Menu size={16} />
+              </button>
+            )}
+          </div>
         </div>
-      </div>
 
       {!isMobile && (
         <div className="w-1/3 flex justify-end items-center gap-4 pr-4 text-neutral-400">
@@ -345,3 +377,4 @@ export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togg
     </>
   );
 }
+

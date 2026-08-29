@@ -3,7 +3,7 @@ const isMobile = type() === 'ios' || type() === 'android';
 import { Play, Volume2, Cloud, Heart, HelpCircle, ChevronDown, ChevronUp, Unplug, X, HardDrive, MoreVertical } from "lucide-react";
 import { useState } from "react";
 import { usePlayerStore } from "../store/usePlayerStore";
-
+import { AutoScrollText } from "./AutoScrollText";
 
 interface TrackListProps {
   openArtistProfile?: any;
@@ -78,24 +78,26 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
                         </span>
                       ))}
                     </div>
-                  <p className={`text-sm font-semibold truncate flex items-center gap-2 ${isActive ? 'text-accent' : 'text-neutral-100'}`}>
-                    {track.title}
-                    {(track.policy === 'SNIP' || track.snipped === true) && (
-                      <span className="text-[9px] font-black bg-[#ff5500]/20 text-[#ff5500] px-1.5 py-0.5 rounded uppercase tracking-widest border border-[#ff5500]/30 shrink-0">
-                        SNIPPET
-                      </span>
-                    )}
-                  </p>
+                  <div className="flex-1 min-w-0 pr-4 flex flex-col justify-center">
+                    <AutoScrollText speed={0.4}>
+                      <div className={`text-sm font-semibold flex items-center gap-2 pr-2 ${isActive ? 'text-accent' : 'text-neutral-100'}`}>
+                        {track.title}
+                        {(track.policy === 'SNIP' || track.snipped === true) && (
+                          <span className="text-[9px] font-black bg-[#ff5500]/20 text-[#ff5500] px-1.5 py-0.5 rounded uppercase tracking-widest border border-[#ff5500]/30 shrink-0">
+                            {track.policy === 'SNIP' ? 'Snipped' : 'Cut'}
+                          </span>
+                        )}
+                      </div>
+                    </AutoScrollText>
+                  </div>
                 </div>
-                <p 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (openArtistProfile && track.user) openArtistProfile(track.user);
-                  }}
-                  className="text-xs text-neutral-400 truncate mt-0.5 hover:underline hover:text-white cursor-pointer transition-colors w-max relative z-10"
-                >
-                  {track.user?.username}
-                </p>
+                <div className="w-1/4 hidden md:flex items-center min-w-0 pr-4">
+                  <AutoScrollText speed={0.5}>
+                    <p onClick={(e) => { e.stopPropagation(); if (openArtistProfile && track.user) openArtistProfile(track.user); }} className="text-xs text-neutral-400 mt-0.5 hover:underline hover:text-white cursor-pointer transition-colors w-max relative z-10 pr-2">
+                      {track.user?.username}
+                    </p>
+                  </AutoScrollText>
+                </div>
               </div>
 
               <button
@@ -135,7 +137,7 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
                   </button>
                 )}
 
-                <div className="w-48 flex flex-col items-end justify-center pr-4">
+                <div className="hidden md:flex w-48 flex-col items-end justify-center pr-4">
                   <div className="flex flex-col items-end justify-center transition-all duration-300">
                     <span className="text-[13px] font-bold text-neutral-300">
                       {((track as any).playback_count || 0) > 0 ? new Intl.NumberFormat('es-ES').format((track as any).playback_count) : ''}
@@ -203,19 +205,18 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
                                   <svg viewBox="0 0 24 24" fill="currentColor" className="w-2.5 h-2.5 text-[#FF0000]"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.13 1 12 1 12s0 3.87.46 5.58a2.78 2.78 0 0 0 1.94 2C5.12 20 12 20 12 20s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2C23 15.87 23 12 23 12s0-3.87-.46-5.58z"></path><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"></polygon></svg>
                                 ) : prov === 'soundcloud' ? (
                                   <Cloud size={10} className="text-[#ff5500] fill-[#ff5500]/20" />
+                                ) : prov === 'local' ? (
+                                  <HardDrive size={10} className="text-[#10b981]" />
                                 ) : (
-                                  <HelpCircle size={10} className="text-neutral-500" />
+                                  <HelpCircle size={10} className="text-neutral-500 opacity-60" />
                                 )}
                             </div>
                           </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-[13px] font-semibold text-white truncate group-hover:text-accent transition-colors">{sourceTrack.title}</span>
-                            <span className="text-[10px] text-neutral-400 truncate">{sourceTrack.user?.username} • {prov === 'youtube' ? 'YouTube Music' : 'SoundCloud'}</span>
+                          <div className="flex flex-col min-w-0 pr-2 overflow-hidden">
+                            <AutoScrollText speed={0.4}><span className="text-xs font-bold text-white group-hover:text-accent transition-colors pr-1">{sourceTrack.title}</span></AutoScrollText>
+                            <AutoScrollText speed={0.5}><span className="text-[10px] text-neutral-400 pr-1">{sourceTrack.user?.username}</span></AutoScrollText>
                           </div>
                         </div>
-                        <span className="text-[10px] text-neutral-500 font-medium whitespace-nowrap">
-                          {(sourceTrack.playback_count || 0) > 0 ? new Intl.NumberFormat('es-ES').format(sourceTrack.playback_count) : '---'} reprod.
-                        </span>
                       </div>
                     );
                   })}
@@ -230,3 +231,20 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
     </ul>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

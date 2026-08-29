@@ -311,8 +311,8 @@ export function ProfileView({ likes, resonancePlaylists, follows }: any) {
             .lava-2 { animation: lava-blob-2 35s infinite alternate ease-in-out; }
           `}</style>
           <div className="absolute inset-0 bg-cover bg-center opacity-40 blur-[150px] saturate-[2.0]" style={{ backgroundImage: `url(${avatarUrl})` }} />
-          <div className="absolute inset-0 bg-cover bg-center opacity-60 blur-[120px] saturate-[2.5] lava-1 origin-top-left" style={{ backgroundImage: `url(${avatarUrl})` }} />
-          <div className="absolute inset-0 bg-cover bg-center opacity-60 blur-[120px] saturate-[2.5] lava-2 origin-bottom-right" style={{ backgroundImage: `url(${avatarUrl})` }} />
+          <div className="absolute inset-0 bg-cover bg-center opacity-60 blur-[120px] saturate-100 opacity-30 lava-1 origin-top-left" style={{ backgroundImage: `url(${avatarUrl})` }} />
+          <div className="absolute inset-0 bg-cover bg-center opacity-60 blur-[120px] saturate-100 opacity-30 lava-2 origin-bottom-right" style={{ backgroundImage: `url(${avatarUrl})` }} />
           <div className="absolute inset-0 backdrop-blur-[100px] bg-[#09090b]/50 z-10" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#09090b]/60 to-[#09090b] z-20" />
         </div>
@@ -321,7 +321,7 @@ export function ProfileView({ likes, resonancePlaylists, follows }: any) {
           <Settings size={24} className="group-hover:rotate-90 transition-transform duration-500" />
         </button>
 
-        <div className="flex items-end gap-8 mb-12 relative z-10">
+        <div className="flex flex-col md:flex-row items-center md:items-end text-center md:text-left gap-8 mb-12 relative z-10">
           <div className="relative group cursor-pointer" onClick={handleOpenEdit}>
             <div className="w-40 h-40 rounded-full overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] ring-4 ring-white/10 bg-neutral-900 flex-shrink-0">
               <img src={avatarUrl} alt={username} className="w-full h-full object-cover" />
@@ -332,7 +332,7 @@ export function ProfileView({ likes, resonancePlaylists, follows }: any) {
           </div>
           <div className="flex flex-col gap-2 pb-2">
             <p className="text-xs font-black text-[#3b82f6] uppercase tracking-[0.2em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Perfil de Resonance</p>
-            <h1 className="text-6xl font-black text-white tracking-tight flex items-center gap-4 drop-shadow-[0_4px_24px_rgba(0,0,0,1)]">
+            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight flex items-center gap-4 drop-shadow-[0_4px_24px_rgba(0,0,0,1)]">
               {username}
               <button onClick={handleOpenEdit} className="text-neutral-500 hover:text-white transition-colors">
                 <Edit3 size={24} />
@@ -345,26 +345,26 @@ export function ProfileView({ likes, resonancePlaylists, follows }: any) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
-          <div className="col-span-2 grid grid-cols-3 gap-4">
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-4 hover:bg-white/10 transition-colors cursor-pointer">
+          <div className="col-span-1 md:col-span-2 grid grid-cols-3 gap-2 md:gap-4">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-2 md:p-4 flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left hover:bg-white/10 transition-colors cursor-pointer">
             <div className="p-3 bg-[#3b82f6]/20 text-[#3b82f6] rounded-full"><Heart size={20} /></div>
             <div>
-              <p className="text-2xl font-black text-white">{likes?.length || 0}</p>
-              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Me Gusta</p>
+              <p className="text-lg md:text-2xl font-black text-white">{likes?.length || 0}</p>
+              <p className="text-[8px] md:text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Me Gusta</p>
             </div>
           </div>
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-4 hover:bg-white/10 transition-colors cursor-pointer">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-2 md:p-4 flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left hover:bg-white/10 transition-colors cursor-pointer">
             <div className="p-3 bg-purple-500/20 text-purple-400 rounded-full"><ListMusic size={20} /></div>
             <div>
-              <p className="text-2xl font-black text-white">{resonancePlaylists?.length || 0}</p>
-              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Playlists</p>
+              <p className="text-lg md:text-2xl font-black text-white">{resonancePlaylists?.length || 0}</p>
+              <p className="text-[8px] md:text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Playlists</p>
             </div>
           </div>
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-4 hover:bg-white/10 transition-colors cursor-pointer">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-2 md:p-4 flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left hover:bg-white/10 transition-colors cursor-pointer">
             <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-full"><User size={20} /></div>
             <div>
-              <p className="text-2xl font-black text-white">{follows?.length || 0}</p>
-              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Siguiendo</p>
+              <p className="text-lg md:text-2xl font-black text-white">{follows?.length || 0}</p>
+              <p className="text-[8px] md:text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Siguiendo</p>
             </div>
           </div>
         </div>

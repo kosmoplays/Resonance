@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { fetch as tauriFetch } from '@tauri-apps/plugin-http';
 import { Bell, Clock, Play, Volume2, Cloud, CheckCheck, Disc3, UserPlus, Info, Sparkles } from "lucide-react";
 import { usePlayerStore } from "../store/usePlayerStore";
+import { AutoScrollText } from "../components/AutoScrollText";
 
 const CLIENT_ID = "lmRjTI0FqeXygHMXc3hRzS7hth20PNk5";
 const getScToken = () => localStorage.getItem("soundcloud_oauth_token") || "";
@@ -272,7 +273,7 @@ export function HomeView({ follows, likes, playTrack, openArtistProfile, openPla
   const unreadCount = notifications.filter(n => !readItems.has(n.id)).length;
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-10 pt-16 pb-32 animate-in fade-in duration-700">
+    <div className="w-full max-w-6xl mx-auto px-4 md:px-10 pt-6 md:pt-16 pb-32 animate-in fade-in duration-700">
 
       {/* =========================================
           SECCIÓN 1: RADAR DE NOVEDADES (TIMELINE AAA)
@@ -317,10 +318,10 @@ export function HomeView({ follows, likes, playTrack, openArtistProfile, openPla
 
         {/* TIMELINE DE NOTIFICACIONES */}
         {isLoading ? (
-          <div className="ml-7 border-l-2 border-white/5 pl-10 space-y-6 py-4">
+          <div className="ml-3 md:ml-7 border-l-2 border-white/5 pl-6 md:pl-10 space-y-6 py-4">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="relative flex items-center gap-6 animate-pulse">
-                <div className="absolute -left-[49px] w-4 h-4 rounded-full bg-white/10 border-4 border-base" />
+                <div className="absolute -left-[29px] md:-left-[49px] w-4 h-4 rounded-full bg-white/10 border-4 border-base" />
                 <div className="w-16 h-16 rounded-xl bg-white/5" />
                 <div className="flex flex-col gap-3 flex-1">
                   <div className="h-4 bg-white/10 rounded w-1/4" />
@@ -330,27 +331,27 @@ export function HomeView({ follows, likes, playTrack, openArtistProfile, openPla
             ))}
           </div>
         ) : (!follows || follows.length === 0) ? (
-          <div className="bg-gradient-to-r from-emerald-500/5 to-transparent border border-white/5 rounded-3xl p-10 flex items-center gap-8 shadow-inner text-left">
-             <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-500/20">
-               <UserPlus size={32} className="text-emerald-500" />
+          <div className="bg-gradient-to-r from-emerald-500/5 to-transparent border border-white/5 rounded-3xl p-6 md:p-10 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6 md:gap-8 shadow-inner">
+             <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-500/20">
+               <UserPlus size={28} className="text-emerald-500" />
              </div>
              <div>
-               <p className="text-2xl font-bold text-white mb-2">Construye tu Radar</p>
+               <p className="text-xl md:text-2xl font-bold text-white mb-2">Construye tu Radar</p>
                <p className="text-sm text-neutral-400 max-w-md">Sigue a tus artistas favoritos para que su nueva música alimente esta línea de tiempo automáticamente.</p>
              </div>
           </div>
         ) : (notifications.length === 0) ? (
-          <div className="bg-gradient-to-r from-white/5 to-transparent border border-white/5 rounded-3xl p-10 flex items-center gap-8 shadow-inner text-left">
-             <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center shrink-0 border border-white/10">
-               <Info size={32} className="text-neutral-500" />
+          <div className="bg-gradient-to-r from-white/5 to-transparent border border-white/5 rounded-3xl p-6 md:p-10 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6 md:gap-8 shadow-inner">
+             <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/5 flex items-center justify-center shrink-0 border border-white/10">
+               <Info size={28} className="text-neutral-500" />
              </div>
              <div>
-               <p className="text-2xl font-bold text-white mb-2">Estás al día</p>
+               <p className="text-xl md:text-2xl font-bold text-white mb-2">Estás al día</p>
                <p className="text-sm text-neutral-400 max-w-md">Tus artistas no han publicado nada nuevo recientemente. El escáner espacial sigue activo en segundo plano.</p>
              </div>
           </div>
         ) : (
-          <div className="ml-7 border-l-2 border-white/10 pl-10 space-y-4 py-2 relative">
+          <div className="ml-3 md:ml-7 border-l-2 border-white/10 pl-6 md:pl-10 space-y-4 py-2 relative">
             {notifications.map((track) => {
               const isActive = currentTrack?.id === track.id;
               const isRead = readItems.has(track.id);
@@ -362,14 +363,14 @@ export function HomeView({ follows, likes, playTrack, openArtistProfile, openPla
                   className="relative group cursor-pointer"
                 >
                   {/* Nodo del Timeline */}
-                  <div className={`absolute -left-[49px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-[3px] border-base transition-colors duration-500 z-10
+                  <div className={`absolute -left-[29px] md:-left-[49px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-[3px] border-base transition-colors duration-500 z-10
                     ${isActive ? 'bg-[#3b82f6] shadow-[0_0_15px_rgba(59,130,246,0.8)]'
                     : !isRead ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)]'
                     : 'bg-neutral-700 group-hover:bg-neutral-500'}`}
                   />
 
                   {/* Tarjeta Feed */}
-                  <div className={`flex items-center gap-6 p-4 rounded-2xl transition-all duration-300 border
+                  <div className={`flex items-center gap-3 md:gap-6 p-3 md:p-4 rounded-2xl transition-all duration-300 border
                     ${isActive ? 'bg-[#3b82f6]/10 border-[#3b82f6]/30 shadow-[0_8px_30px_rgba(59,130,246,0.15)] ml-2'
                     : 'bg-[#181818] border-white/5 hover:bg-[#282828] hover:border-white/10 hover:shadow-xl'}`}>
 
@@ -621,5 +622,7 @@ export function HomeView({ follows, likes, playTrack, openArtistProfile, openPla
     </div>
   );
 }
+
+
 
 
