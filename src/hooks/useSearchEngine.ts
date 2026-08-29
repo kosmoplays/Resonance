@@ -264,10 +264,14 @@ export function useSearchEngine(isOffline: boolean, openView: (title: string, tr
 
      const topUsers = Array.from(mergedUsersMap.values()).sort((a: any, b: any) => (b.followers_count || 0) - (a.followers_count || 0));
 
-      if (forceNavigate || viewTitleRef.current.startsWith("Resultados:")) {
+      // 🛡️ ACTUALIZACIÓN SÍNCRONA DE ESTADO EN ZUSTAND PARA VISTA MÓVIL Y DESKTOP
+      usePlayerStore.getState().setViewTracks(sortedTracks);
+      usePlayerStore.getState().setViewUsers(topUsers);
+      usePlayerStore.getState().setViewPlaylists(scPlaylists);
+
+      if (forceNavigate) {
         openView(`Resultados: ${searchQuery}`, sortedTracks, topUsers);
       }
-      usePlayerStore.getState().setViewPlaylists(scPlaylists); // 🛡️ INYECCIÓN POST-PURGA
     } catch (error) { console.error("Error en búsqueda:", error); }
     setIsSearching(false);
   };

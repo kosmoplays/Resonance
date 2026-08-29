@@ -28,6 +28,13 @@ export function MobileProfileView({ scProps }: MobileProfileViewProps) {
 
   const [scTokenInput, setScTokenInput] = useState('');
   const [showScModal, setShowScModal] = useState(false);
+  const [showLazaroModal, setShowLazaroModal] = useState(false);
+
+  const deletedHistory = scProps?.deletedHistory || {};
+  const lazaroCount = Object.values(deletedHistory).reduce(
+    (acc: number, arr: any) => acc + (arr?.length || 0),
+    0
+  );
 
   const email = user?.email || 'usuario@resonance.app';
   const defaultUsername = email ? email.split('@')[0] : 'Usuario Resonance';
@@ -67,19 +74,22 @@ export function MobileProfileView({ scProps }: MobileProfileViewProps) {
 
   const handleSaveScToken = async () => {
     if (scTokenInput.trim() && user?.id) {
-      localStorage.setItem('soundcloud_oauth_token', scTokenInput.trim());
+      const token = scTokenInput.trim();
+      localStorage.setItem('soundcloud_oauth_token', token);
 
       try {
         await supabase.from('linked_accounts').upsert({
           user_id: user.id,
-          account_id: 'soundcloud-' + Date.now(),
+          account_id: `soundcloud-${user.id}`,
           provider: 'soundcloud',
-          account_name: 'Cuenta SoundCloud',
-        });
+          account_name: 'SoundCloud Móvil',
+          access_token: token,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id, provider' as any });
       } catch (e) {}
 
       window.dispatchEvent(
-        new CustomEvent('show-toast', { detail: { msg: 'Token de SoundCloud guardado', type: 'success' } })
+        new CustomEvent('show-toast', { detail: { msg: 'Cuenta de SoundCloud actualizada', type: 'success' } })
       );
       setShowScModal(false);
       setScTokenInput('');
@@ -206,6 +216,87 @@ export function MobileProfileView({ scProps }: MobileProfileViewProps) {
         </div>
       )}
 
+      {/* ARTISTAS SEGUIDOS COMPRIMIDOS (CON BOTÓN VER TODOS) */}
+      {scProps?.follows && scProps.follows.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <User size={16} className="text-accent" />
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                Artistas Seguidos ({scProps.follows.length})
+              </h3>
+            </div>
+            {scProps.openView && (
+              <button
+                type="button"
+                onClick={() => scProps.openView('Artistas Seguidos', scProps.follows)}
+                className="text-xs font-bold text-accent active:opacity-70"
+              >
+                Ver todos
+              </button>
+            )}
+          </div>
+
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none">
+            {scProps.follows.slice(0, 10).map((artist: any) => {
+              const avatar = artist.avatar_url
+                ? artist.avatar_url.replace('-large', '-t300x300')
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    artist.username || 'Artist'
+                  )}&background=3b82f6&color=fff&size=128`;
+
+              return (
+                <div
+                  key={artist.id}
+                  onClick={() => scProps.openArtistProfile && scProps.openArtistProfile(artist)}
+                  className="flex flex-col items-center flex-shrink-0 w-16 group cursor-pointer active:scale-95 transition-transform"
+                >
+                  <div className="w-14 h-14 rounded-full overflow-hidden border border-white/10 bg-neutral-900 shadow-md">
+                    <img
+                      src={avatar}
+                      alt={artist.username}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="text-[11px] font-semibold text-white truncate w-full text-center mt-1">
+                    {artist.username}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* MOTOR LÁZARO (BOTÓN ELEGANTE QUE ABRE PANEL DE RECUPERACIÓN) */}
+      <section>
+        <button
+          type="button"
+          onClick={() => setShowLazaroModal(true)}
+          className="w-full p-4 rounded-3xl bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-blue-500/10 border border-white/10 active:scale-[0.98] transition-all flex items-center justify-between shadow-lg text-left"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black flex-shrink-0 shadow-inner">
+              ✨
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="font-bold text-sm text-white">Motor Lázaro</h4>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  {lazaroCount} {lazaroCount === 1 ? 'canción' : 'canciones'}
+                </span>
+              </div>
+              <p className="text-xs text-neutral-400 mt-0.5">
+                Pistas eliminadas u ocultas listas para restaurar
+              </p>
+            </div>
+          </div>
+          <span className="text-xs font-bold text-accent px-3 py-1.5 bg-white/5 rounded-xl">
+            Abrir
+          </span>
+        </button>
+      </section>
+
       {/* EXTERNAL LINKED ACCOUNTS */}
       <section className="space-y-3">
         <div className="flex items-center gap-2">
@@ -233,7 +324,7 @@ export function MobileProfileView({ scProps }: MobileProfileViewProps) {
               onClick={() => setShowScModal(true)}
               className="px-3 py-1.5 bg-white/10 active:bg-white/20 text-xs font-semibold rounded-xl text-neutral-200"
             >
-              Configurar
+              {hasScToken ? 'Actualizar' : 'Configurar'}
             </button>
           </div>
 
@@ -275,20 +366,102 @@ export function MobileProfileView({ scProps }: MobileProfileViewProps) {
         </p>
       </section>
 
+      {/* MODAL MOTOR LÁZARO */}
+      {showLazaroModal && (
+        <div className="fixed inset-0 z-[150] flex flex-col justify-end p-0 bg-black/80 backdrop-blur-md">
+          <div className="bg-neutral-900 border-t border-white/10 rounded-t-3xl p-5 max-h-[80vh] flex flex-col animate-in slide-in-from-bottom duration-300">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10 flex-shrink-0">
+              <div>
+                <h3 className="text-base font-black text-white flex items-center gap-2">
+                  <span>Motor Lázaro</span>
+                  <span className="text-xs font-bold px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded-full">
+                    {lazaroCount}
+                  </span>
+                </h3>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  Canciones ocultas que no volverán a sonar a menos que las revivas
+                </p>
+              </div>
+              <button
+                onClick={() => setShowLazaroModal(false)}
+                className="p-2 text-neutral-400 hover:text-white bg-white/5 rounded-full"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto py-3 space-y-3">
+              {lazaroCount === 0 ? (
+                <div className="py-16 text-center text-neutral-500 space-y-2">
+                  <p className="text-sm font-semibold">No tienes canciones en el Motor Lázaro</p>
+                  <p className="text-xs text-neutral-600">
+                    Las canciones que elimines de Resonance aparecerán aquí para que puedas restaurarlas
+                  </p>
+                </div>
+              ) : (
+                Object.entries(deletedHistory).map(([source, tracks]: [string, any]) => {
+                  if (!tracks || tracks.length === 0) return null;
+                  return (
+                    <div key={source} className="space-y-2">
+                      <div className="flex items-center justify-between px-1">
+                        <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                          {source} ({tracks.length})
+                        </span>
+                        {scProps.restoreAllFromHistory && (
+                          <button
+                            onClick={() => scProps.restoreAllFromHistory(source)}
+                            className="text-xs font-bold text-accent active:opacity-70"
+                          >
+                            Revivir todas
+                          </button>
+                        )}
+                      </div>
+                      <div className="space-y-1.5">
+                        {tracks.map((t: any) => (
+                          <div
+                            key={t.id}
+                            className="flex items-center justify-between p-3 bg-white/5 rounded-2xl border border-white/5"
+                          >
+                            <div className="min-w-0 pr-3">
+                              <h5 className="font-bold text-xs text-white truncate">{t.title}</h5>
+                              <p className="text-[10px] text-neutral-400 truncate">
+                                {t.user?.username || t.artist || 'Desconocido'}
+                              </p>
+                            </div>
+                            {scProps.restoreTrackFromHistory && (
+                              <button
+                                onClick={() => scProps.restoreTrackFromHistory(source, t.id)}
+                                className="px-3 py-1.5 bg-accent/20 text-accent font-bold text-xs rounded-xl active:scale-95 flex-shrink-0"
+                              >
+                                Revivir
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* MODAL TOKEN SC */}
       {showScModal && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-neutral-900 border border-white/10 rounded-3xl p-6 w-full max-w-sm space-y-4">
-            <h3 className="text-base font-bold text-white">Token OAuth de SoundCloud</h3>
+          <div className="bg-neutral-900 border border-white/10 rounded-3xl p-6 w-full max-w-sm space-y-4 animate-in zoom-in-95 duration-200">
+            <h3 className="text-base font-bold text-white">Vincular Token de SoundCloud</h3>
             <p className="text-xs text-neutral-400">
-              Pega tu token de sesión de SoundCloud (`OAuth 2-...`) para acceder a todos tus me gusta privados.
+              Pega tu token de sesión de SoundCloud (`OAuth 2-...`) para acceder a todos tus me gusta privados. Se actualizará tu cuenta vinculada sin duplicar registros.
             </p>
             <input
               type="text"
               placeholder="2-322582-..."
               value={scTokenInput}
               onChange={(e) => setScTokenInput(e.target.value)}
-              className="w-full bg-black/50 border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white"
+              className="w-full bg-black/50 border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-accent"
             />
             <div className="flex gap-2">
               <button
