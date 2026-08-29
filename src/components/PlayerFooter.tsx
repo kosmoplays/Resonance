@@ -215,7 +215,7 @@ export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togg
                   className="h-full bg-white group-hover:bg-[#3b82f6] transition-all duration-100 ease-linear rounded-full relative"
                   style={{ width: `${duration > 0 ? (progress / duration) * 100 : 0}%` }}
                 >
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)] md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
+                  
                 </div>
               </div>
               <input
@@ -377,6 +377,7 @@ export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togg
     </>
   );
 }
+
 
 
 

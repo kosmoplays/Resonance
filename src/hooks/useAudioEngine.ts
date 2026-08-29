@@ -241,6 +241,7 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
 const playNext = useCallback((isAuto?: any) => {
     const isAutomatic = isAuto === true;
     const { currentTrack, viewTracks, isShuffle, loopMode } = stateRefs.current;
+    const activeList = contextTracksRef.current.length > 0 ? contextTracksRef.current : viewTracks;
     const queue = usePlayerStore.getState().queue;
 
     // Si estamos en Bucle 1 y la canción terminó sola, repetimos.
@@ -265,7 +266,7 @@ const playNext = useCallback((isAuto?: any) => {
         }
 
         // --- LÓGICA DE REPRODUCCIÓN ESTÁNDAR ---
-    if (!viewTracks || viewTracks.length === 0) return;
+    if (!activeList || activeList.length === 0) return;
 
     const { autoplayBlacklist } = stateRefs.current;
     let nextIndex = 0;
@@ -273,28 +274,28 @@ const playNext = useCallback((isAuto?: any) => {
     let foundValid = false;
 
     if (isShuffle) {
-      while (attempts < viewTracks.length) {
-        nextIndex = Math.floor(Math.random() * viewTracks.length);
-        if (!autoplayBlacklist.includes(String(viewTracks[nextIndex].id))) { foundValid = true; break; }
+      while (attempts < activeList.length) {
+        nextIndex = Math.floor(Math.random() * activeList.length);
+        if (!autoplayBlacklist.includes(String(activeList[nextIndex].id))) { foundValid = true; break; }
         attempts++;
       }
     } else {
-      const currentIndex = viewTracks.findIndex(t => t.id === currentTrack?.id);
+      const currentIndex = activeList.findIndex(t => t.id === currentTrack?.id);
       nextIndex = currentIndex + 1;
 
-      while (attempts < viewTracks.length) {
-        if (nextIndex >= viewTracks.length) {
+      while (attempts < activeList.length) {
+        if (nextIndex >= activeList.length) {
           if (loopMode === 1) nextIndex = 0;
           else { setIsPlaying(false); return; } // Fin de la lista
         }
-        if (!autoplayBlacklist.includes(String(viewTracks[nextIndex].id))) { foundValid = true; break; }
+        if (!autoplayBlacklist.includes(String(activeList[nextIndex].id))) { foundValid = true; break; }
         nextIndex++;
         attempts++;
       }
     }
 
     // Si encontramos una canción no bloqueada, la reproducimos. Si no, detenemos.
-    if (foundValid) playTrack(viewTracks[nextIndex]);
+    if (foundValid) playTrack(activeList[nextIndex]);
     else setIsPlaying(false);
 
   }, [useWidget]);
@@ -660,6 +661,8 @@ const checkWidget = () => {
     analyserRef, useWidget, isAudioLoading, hasHistory
   };
 }
+
+
 
 
 

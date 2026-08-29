@@ -1,7 +1,7 @@
 import { Heart, History } from 'lucide-react';
 
 export function MobileLibraryView({ scProps }: any) {
-  const { openView } = scProps;
+  const { openView, scLikes, ytLikes, likes } = scProps;
 
   const cards = [
     { id: 'likes-sc', title: 'Me Gusta', subtitle: 'SoundCloud', icon: Heart, color: 'from-[#ff5500] to-[#ff8800]' },
@@ -18,9 +18,9 @@ export function MobileLibraryView({ scProps }: any) {
           <div 
             key={c.id}
             onClick={() => {
-              if (c.id === 'likes-sc') openView('Me Gusta (SoundCloud)');
-              if (c.id === 'likes-yt') openView('Me Gusta (YouTube)');
-              if (c.id === 'history') openView('Historial de Reproducción');
+              if (c.id === 'likes-sc') openView('Me Gusta (SoundCloud)', scLikes);
+              if (c.id === 'likes-yt') openView('Me Gusta (YouTube)', ytLikes);
+              if (c.id === 'history') openView('Historial de Reproducción', []);
             }}
             className="aspect-square rounded-3xl p-4 flex flex-col justify-end bg-gradient-to-br relative overflow-hidden active:scale-[0.96] transition-transform"
           >
@@ -34,3 +34,6 @@ export function MobileLibraryView({ scProps }: any) {
     </div>
   );
 }
+
+
+

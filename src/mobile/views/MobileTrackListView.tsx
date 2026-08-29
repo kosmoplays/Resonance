@@ -19,6 +19,27 @@ export function MobileTrackListView({ scProps, audioProps, setMobileContext }: a
         </AutoScrollText>
       </div>
 
+      {scProps.viewContext?.[0] && viewTitle.startsWith('Perfil:') && (
+        <div className="relative w-full h-48 mb-4 flex-shrink-0 rounded-b-3xl overflow-hidden shadow-lg">
+          <img 
+            src={scProps.viewContext[0].banner_url || scProps.viewContext[0].avatar_url?.replace('-large', '-t500x500')} 
+            className="w-full h-full object-cover opacity-80"
+            alt="Banner"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+          <div className="absolute bottom-4 left-4 flex items-center gap-4">
+            <img 
+              src={scProps.viewContext[0].avatar_url?.replace('-large', '-t500x500')} 
+              className="w-16 h-16 rounded-full shadow-lg ring-2 ring-white/20"
+              alt="Avatar"
+            />
+            <div>
+              <p className="text-xs font-bold text-[#3b82f6] uppercase tracking-widest">{scProps.viewContext[0].total_followers > 0 ? new Intl.NumberFormat('es-ES', { notation: "compact" }).format(scProps.viewContext[0].total_followers) : '---'} SEGUIDORES</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* TRACKS */}
       <div className="flex-1 overflow-y-auto pb-32 px-2">
         <div className="flex flex-col gap-1 mt-2">
@@ -62,3 +83,4 @@ export function MobileTrackListView({ scProps, audioProps, setMobileContext }: a
     </div>
   );
 }
+

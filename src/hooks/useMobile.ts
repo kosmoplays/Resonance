@@ -26,11 +26,24 @@ if (typeof window !== 'undefined') {
   });
 }
 
+function checkIsMobile() {
+  let isOsMobile = false;
+  try {
+    const t = type();
+    isOsMobile = t === 'ios' || t === 'android';
+  } catch (e) {
+    // plugin-os might fail in some environments
+  }
+  
+  const isTouch = window.matchMedia('(pointer: coarse)').matches;
+  const isSmallScreen = window.innerWidth <= 1024;
+  
+  return isOsMobile || isTouch || isSmallScreen;
+}
+
 export function useMobile() {
   const [forceMobile, setForceMobile] = useState(globalForceMobile);
-  const [isMobile, setIsMobile] = useState(() => {
-    return window.innerWidth <= 768 || type() === 'ios' || type() === 'android';
-  });
+  const [isMobile, setIsMobile] = useState(checkIsMobile);
 
   useEffect(() => {
     const l = (val: boolean) => setForceMobile(val);
@@ -39,9 +52,7 @@ export function useMobile() {
   }, []);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768 || type() === 'ios' || type() === 'android');
-    };
+    const handleResize = () => setIsMobile(checkIsMobile());
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);

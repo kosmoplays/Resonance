@@ -78,7 +78,7 @@ export function ProfileHeader({ profileUser, toggleFollow, follows, onPlay, onRe
       />
       
       {/* Capas de contraste extremo obligatoria */}
-      <div className="absolute inset-0 -z-15 bg-black/60 mix-blend-multiply" />
+      <div className="absolute inset-0 z-[-15] bg-black/60 mix-blend-multiply" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-base via-base/80 to-transparent" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-base/90 via-base/40 to-transparent" />
       
