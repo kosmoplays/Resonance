@@ -3,6 +3,7 @@ const isMobile = type() === 'ios' || type() === 'android';
 import { Play, Volume2, Cloud, Heart, HelpCircle, ChevronDown, ChevronUp, Unplug, X, HardDrive, MoreVertical } from "lucide-react";
 import { useState } from "react";
 import { usePlayerStore } from "../store/usePlayerStore";
+import { AutoScrollText } from "./AutoScrollText";
 
 interface TrackListProps {
   openArtistProfile?: any;
@@ -78,26 +79,24 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
                       ))}
                     </div>
                   <div className="flex-1 min-w-0 pr-4 flex flex-col justify-center">
-                    <p className={`text-sm font-semibold truncate flex items-center gap-2 ${isActive ? 'text-accent' : 'text-neutral-100'}`}>
-                      {track.title}
-                      {(track.policy === 'SNIP' || track.snipped === true) && (
-                        <span className="text-[9px] font-black bg-[#ff5500]/20 text-[#ff5500] px-1.5 py-0.5 rounded uppercase tracking-widest border border-[#ff5500]/30 shrink-0">
-                          {track.policy === 'SNIP' ? 'Snipped' : 'Cut'}
-                        </span>
-                      )}
-                    </p>
+                    <AutoScrollText speed={0.4}>
+                      <div className={`text-sm font-semibold flex items-center gap-2 pr-2 ${isActive ? 'text-accent' : 'text-neutral-100'}`}>
+                        {track.title}
+                        {(track.policy === 'SNIP' || track.snipped === true) && (
+                          <span className="text-[9px] font-black bg-[#ff5500]/20 text-[#ff5500] px-1.5 py-0.5 rounded uppercase tracking-widest border border-[#ff5500]/30 shrink-0">
+                            {track.policy === 'SNIP' ? 'Snipped' : 'Cut'}
+                          </span>
+                        )}
+                      </div>
+                    </AutoScrollText>
                   </div>
                 </div>
                 <div className="w-1/4 hidden md:flex items-center min-w-0 pr-4">
-                  <p 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (openArtistProfile && track.user) openArtistProfile(track.user);
-                    }}
-                    className="text-xs text-neutral-400 truncate mt-0.5 hover:underline hover:text-white cursor-pointer transition-colors w-max relative z-10"
-                  >
-                    {track.user?.username}
-                  </p>
+                  <AutoScrollText speed={0.5}>
+                    <p onClick={(e) => { e.stopPropagation(); if (openArtistProfile && track.user) openArtistProfile(track.user); }} className="text-xs text-neutral-400 mt-0.5 hover:underline hover:text-white cursor-pointer transition-colors w-max relative z-10 pr-2">
+                      {track.user?.username}
+                    </p>
+                  </AutoScrollText>
                 </div>
               </div>
 
@@ -213,9 +212,9 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
                                 )}
                             </div>
                           </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-[13px] font-semibold text-white truncate group-hover:text-accent transition-colors">{sourceTrack.title}</span>
-                            <span className="text-[10px] text-neutral-400 truncate">{sourceTrack.user?.username}</span>
+                          <div className="flex flex-col min-w-0 pr-2 overflow-hidden">
+                            <AutoScrollText speed={0.4}><span className="text-xs font-bold text-white group-hover:text-accent transition-colors pr-1">{sourceTrack.title}</span></AutoScrollText>
+                            <AutoScrollText speed={0.5}><span className="text-[10px] text-neutral-400 pr-1">{sourceTrack.user?.username}</span></AutoScrollText>
                           </div>
                         </div>
                       </div>
@@ -232,8 +231,6 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
     </ul>
   );
 }
-
-
 
 
 

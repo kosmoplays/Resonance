@@ -2,11 +2,10 @@ import { Heart, Search, Library, Settings, X, Radio, ChevronDown, Cloud, Plus, L
 import { useEffect, useState } from "react";
 import { VirtualKeyboard } from "./VirtualKeyboard";
 import { useAuthStore } from "../store/useAuthStore";
-import { usePlayerStore } from '../store/usePlayerStore';
-import { AutoScrollText } from './AutoScrollText';
+import { usePlayerStore } from "../store/usePlayerStore";
 import { useHubStore } from "../store/useHubStore";
 
-export function Sidebar({ isMobile, loadLibrary, handleSearch, searchQuery, setSearchQuery, isOffline, likes, scLikes, ytLikes, playlists, openPlaylist, openView, viewTitle, setShowSettings, resonancePlaylists, createPlaylist, updatePlaylist, deletePlaylist, follows }: any) {
+export function Sidebar({ loadLibrary, handleSearch, searchQuery, setSearchQuery, isOffline, likes, scLikes, ytLikes, playlists, openPlaylist, openView, viewTitle, setShowSettings, resonancePlaylists, createPlaylist, updatePlaylist, deletePlaylist, follows }: any) {
     const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
     const [newPlaylistName, setNewPlaylistName] = useState("");
     const [syncState, setSyncState] = useState<'idle' | 'syncing' | 'synced'>('idle');
@@ -65,73 +64,70 @@ export function Sidebar({ isMobile, loadLibrary, handleSearch, searchQuery, setS
   }, [searchQuery]); // Esto se ejecuta cada vez que 'searchQuery' cambia
 
   return (
-    <aside className={`${isMobile ? 'w-full' : 'w-64'} bg-elevated flex-shrink-0 flex flex-col border-r border-white/5 z-20`}>
-      <div className={`${isMobile ? 'p-4' : 'p-7'} pb-4`}>
+    <aside className="w-64 bg-elevated flex-shrink-0 flex flex-col border-r border-white/5 z-20">
+      <div className="p-7 pb-4">
         
-        {!isMobile && (
-          <div className="flex items-center justify-between mb-8 text-white">
-            <div
-              className="flex items-center gap-3 p-1.5 -ml-1.5 rounded-xl"
-              title="Resonance"
-            >
-              <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-[#3b82f6]/20 border border-[#3b82f6]/30 group-hover:scale-105 transition-transform shadow-inner">
-                <LayoutGrid size={16} className="text-[#3b82f6]" />
-              </div>
-              <h2 className="text-lg font-black tracking-widest uppercase group-hover:text-[#3b82f6] transition-colors">Resonance</h2>
+        {/* CABECERA: LOGO Y CONFIGURACIÓN GENERAL */}
+        <div className="flex items-center justify-between mb-8 text-white">
+          <div
+            className="flex items-center gap-3 p-1.5 -ml-1.5 rounded-xl"
+            title="Resonance"
+          >
+            <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-[#3b82f6]/20 border border-[#3b82f6]/30 group-hover:scale-105 transition-transform shadow-inner">
+              <LayoutGrid size={16} className="text-[#3b82f6]" />
             </div>
-            {/* NUEVA RUEDITA DE CONFIGURACIÓN MINIMALISTA */}
-            <button 
-              onClick={() => setShowSettings(true)}
-              className="text-neutral-500 hover:text-white transition-colors group p-1"
-              title="Configuración de la aplicación"
-            >
-              <Settings size={18} className="group-hover:rotate-90 transition-transform duration-500" />
-            </button>
+            <h2 className="text-lg font-black tracking-widest uppercase group-hover:text-[#3b82f6] transition-colors">Resonance</h2>
           </div>
-        )}
+                    {/* NUEVA RUEDITA DE CONFIGURACIÓN MINIMALISTA */}
+          <button 
+            onClick={() => setShowSettings(true)}
+            className="text-neutral-500 hover:text-white transition-colors group p-1"
+            title="Configuración de la aplicación"
+          >
+            <Settings size={18} className="group-hover:rotate-90 transition-transform duration-500" />
+          </button>
+        </div>
         
         {/* BARRA DE BÚSQUEDA INTERACTIVA */}
-        {!isMobile && (
-          <form onSubmit={(e) => { e.preventDefault(); handleSearch(e, true); }} className="mb-6 relative group">
-            <div className="flex gap-2 relative">
-              <div className="relative flex items-center flex-1 transition-all duration-300 group-focus-within:scale-[1.02]">
-                <Search size={16} className="absolute left-3 text-neutral-500 transition-colors group-focus-within:text-accent z-10" />
-                
-                <input 
-                  autoComplete="off" spellCheck="false"
-                  id="search-input"
-                  type="text" 
-                  placeholder="Buscar canciones..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white/5 hover:bg-white/10 border border-white/5 rounded-md py-2.5 pl-10 pr-10 text-sm text-white placeholder-neutral-500 outline-none focus:border-accent/50 focus:bg-white/10 focus:shadow-[0_0_15px_rgba(var(--accent),0.1)] transition-all duration-300"
-                />
-                
-                {/* Botón de limpieza rápida que aparece solo si hay texto */}
-                {searchQuery && (
-                  <button 
-                    type="button"
-                    onClick={() => {
-                      setSearchQuery("");
-                    }} 
-                    className="absolute right-3 text-neutral-400 hover:text-white transition-colors z-10 animate-in zoom-in duration-200"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
+        <form onSubmit={(e) => { e.preventDefault(); handleSearch(e, true); }} className="mb-6 relative group">
+          <div className="flex gap-2 relative">
+            <div className="relative flex items-center flex-1 transition-all duration-300 group-focus-within:scale-[1.02]">
+              <Search size={16} className="absolute left-3 text-neutral-500 transition-colors group-focus-within:text-accent z-10" />
               
-              <button 
-                type="button" 
-                onClick={() => setShowKeyboard(!showKeyboard)}
-                title="Teclado Virtual (Ctrl+K)"
-                className={`flex items-center justify-center w-10 shrink-0 rounded-md border transition-colors ${showKeyboard ? 'bg-[#3b82f6]/20 border-[#3b82f6] text-[#3b82f6]' : 'bg-white/5 border-white/5 text-neutral-400 hover:text-white hover:bg-white/10'}`}
-              >
-                <Keyboard size={16} />
-              </button>
+              <input 
+                autoComplete="off" spellCheck="false"
+                id="search-input"
+                type="text" 
+                placeholder="Buscar canciones..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white/5 hover:bg-white/10 border border-white/5 rounded-md py-2.5 pl-10 pr-10 text-sm text-white placeholder-neutral-500 outline-none focus:border-accent/50 focus:bg-white/10 focus:shadow-[0_0_15px_rgba(var(--accent),0.1)] transition-all duration-300"
+              />
+              
+              {/* Botón de limpieza rápida que aparece solo si hay texto */}
+              {searchQuery && (
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                  }} 
+                  className="absolute right-3 text-neutral-400 hover:text-white transition-colors z-10 animate-in zoom-in duration-200"
+                >
+                  <X size={14} />
+                </button>
+              )}
             </div>
-          </form>
-        )}
+            
+            <button 
+              type="button" 
+              onClick={() => setShowKeyboard(!showKeyboard)}
+              title="Teclado Virtual (Ctrl+K)"
+              className={`flex items-center justify-center w-10 shrink-0 rounded-md border transition-colors ${showKeyboard ? 'bg-[#3b82f6]/20 border-[#3b82f6] text-[#3b82f6]' : 'bg-white/5 border-white/5 text-neutral-400 hover:text-white hover:bg-white/10'}`}
+            >
+              <Keyboard size={16} />
+            </button>
+          </div>
+        </form>
 
         <VirtualKeyboard 
           isOpen={showKeyboard} 
@@ -181,25 +177,29 @@ export function Sidebar({ isMobile, loadLibrary, handleSearch, searchQuery, setS
           </div>
 
           {/* ☁️ ME GUSTA EXTERNOS (SOUNDCLOUD) */}
-          <div
-            onClick={() => openView("Me Gusta (SoundCloud)", scLikes || [])}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-colors mb-1 ${viewTitle === "Me Gusta (SoundCloud)" ? 'bg-white/10 text-white' : 'hover:bg-white/5 text-neutral-400 hover:text-white'}`}
-          >
-            <Cloud size={16} className={viewTitle === "Me Gusta (SoundCloud)" ? 'text-[#ff5500]' : 'text-neutral-500'} />
-            <span className="font-semibold text-sm">Me Gusta (SC)</span>
-          </div>
+          {scLikes && scLikes.length > 0 && (
+            <div
+              onClick={() => openView("Me Gusta (SoundCloud)", scLikes)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-colors mb-1 ${viewTitle === "Me Gusta (SoundCloud)" ? 'bg-white/10 text-white' : 'hover:bg-white/5 text-neutral-400 hover:text-white'}`}
+            >
+              <Cloud size={16} className={viewTitle === "Me Gusta (SoundCloud)" ? 'text-[#ff5500]' : 'text-neutral-500'} />
+              <span className="font-semibold text-sm">Me Gusta (SC)</span>
+            </div>
+          )}
 
           {/* 🔴 ME GUSTA EXTERNOS (YOUTUBE) */}
-          <div
-            onClick={() => openView("Me Gusta (YouTube)", ytLikes || [])}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-colors ${viewTitle === "Me Gusta (YouTube)" ? 'bg-white/10 text-white' : 'hover:bg-white/5 text-neutral-400 hover:text-white'}`}
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor" className={`w-4 h-4 flex-shrink-0 ${viewTitle === "Me Gusta (YouTube)" ? 'text-[#FF0000]' : 'text-neutral-500'}`}>
-              <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.13 1 12 1 12s0 3.87.46 5.58a2.78 2.78 0 0 0 1.94 2C5.12 20 12 20 12 20s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94 2C23 15.87 23 12 23 12s0-3.87-.46-5.58z"></path>
-              <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"></polygon>
-            </svg>
-            <span className="font-semibold text-sm">Me Gusta (YT)</span>
-          </div>
+          {ytLikes && ytLikes.length > 0 && (
+            <div
+              onClick={() => openView("Me Gusta (YouTube)", ytLikes)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-colors ${viewTitle === "Me Gusta (YouTube)" ? 'bg-white/10 text-white' : 'hover:bg-white/5 text-neutral-400 hover:text-white'}`}
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" className={`w-4 h-4 flex-shrink-0 ${viewTitle === "Me Gusta (YouTube)" ? 'text-[#FF0000]' : 'text-neutral-500'}`}>
+                <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.13 1 12 1 12s0 3.87.46 5.58a2.78 2.78 0 0 0 1.94 2C5.12 20 12 20 12 20s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2C23 15.87 23 12 23 12s0-3.87-.46-5.58z"></path>
+                <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"></polygon>
+              </svg>
+              <span className="font-semibold text-sm">Me Gusta (YT)</span>
+            </div>
+          )}
         </div>
 
           <div
@@ -271,7 +271,7 @@ export function Sidebar({ isMobile, loadLibrary, handleSearch, searchQuery, setS
                           className="w-6 h-6 rounded bg-neutral-800 object-cover flex-shrink-0 shadow-md"
                           alt=""
                         />
-                        <AutoScrollText speed={0.4}><span className="pr-2">{playlist.title}</span></AutoScrollText>
+                        <span className="truncate">{playlist.title}</span>
                       </div>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
@@ -354,7 +354,7 @@ export function Sidebar({ isMobile, loadLibrary, handleSearch, searchQuery, setS
                             className="w-6 h-6 rounded bg-neutral-800 object-cover flex-shrink-0 shadow-md"
                             alt=""
                           />
-                          <AutoScrollText speed={0.4}><span className="pr-2">{playlist.title}</span></AutoScrollText>
+                          <span className="truncate">{playlist.title}</span>
                         </li>
                       );
                     })}
@@ -366,30 +366,28 @@ export function Sidebar({ isMobile, loadLibrary, handleSearch, searchQuery, setS
         </div>
 
         {/* TARJETA DE PERFIL (BOTÓN INFERIOR) */}
-        {!isMobile && (
-          <div className="p-4 mt-auto border-t border-white/5 bg-black/20">
-            <div
-              onClick={() => openView("Mi Perfil", [])}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all group ${viewTitle === "Mi Perfil" ? 'bg-white/10' : 'hover:bg-white/5'}`}
-            >
-              <div className="w-9 h-9 rounded-full overflow-hidden bg-[#3b82f6] flex-shrink-0">
-                 <img
-                   src={user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${user?.user_metadata?.username || user?.email?.split('@')[0] || 'U'}&background=3b82f6&color=fff`}
-                   alt="Avatar"
-                   className="w-full h-full object-cover"
-                 />
-              </div>
-              <div className="flex flex-col flex-1 overflow-hidden">
-                <span className="text-sm font-bold text-white truncate group-hover:text-[#3b82f6] transition-colors">
-                  {user?.user_metadata?.username || user?.email?.split('@')[0] || 'Usuario'}
-                </span>
-                <span className="text-[10px] text-neutral-500 uppercase tracking-widest font-semibold">
-                  Cuenta Básica
-                </span>
-              </div>
+        <div className="p-4 mt-auto border-t border-white/5 bg-black/20">
+          <div
+            onClick={() => openView("Mi Perfil", [])}
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all group ${viewTitle === "Mi Perfil" ? 'bg-white/10' : 'hover:bg-white/5'}`}
+          >
+            <div className="w-9 h-9 rounded-full overflow-hidden bg-[#3b82f6] flex-shrink-0">
+               <img
+                 src={user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${user?.user_metadata?.username || user?.email?.split('@') || 'U'}&background=3b82f6&color=fff`}
+                 alt="Avatar"
+                 className="w-full h-full object-cover"
+               />
+            </div>
+            <div className="flex flex-col flex-1 overflow-hidden">
+              <span className="text-sm font-bold text-white truncate group-hover:text-[#3b82f6] transition-colors">
+                {user?.user_metadata?.username || user?.email?.split('@') || 'Usuario'}
+              </span>
+              <span className="text-[10px] text-neutral-500 uppercase tracking-widest font-semibold">
+                Cuenta Básica
+              </span>
             </div>
           </div>
-        )}
+        </div>
 
         {/* 🛡️ MODAL IN-APP: ELIMINAR PLAYLIST */}
       {playlistToDelete && (
@@ -504,8 +502,6 @@ export function Sidebar({ isMobile, loadLibrary, handleSearch, searchQuery, setS
        </aside>
   );
 }
-
-
 
 
 

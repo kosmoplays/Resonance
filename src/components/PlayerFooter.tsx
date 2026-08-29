@@ -5,7 +5,6 @@ import { PictureInPicture2, Scissors } from "lucide-react";
 import { toggleMiniPlayerWindow } from "../lib/windowUtils";
 import { CutEditor } from "./CutEditor";
 import { useRef, useEffect, useState } from "react";
-import { AutoScrollText } from "./AutoScrollText";
 
 export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togglePlay, handleSeek, setIsSeeking, useWidget, likes, toggleLike, isAudioLoading, openArtistProfile  }: any) {  
   const isMobile = useMobile();
@@ -115,31 +114,27 @@ export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togg
                 <img src={currentTrack.artwork_url?.replace('-large', '-t50x50') || currentTrack.user?.avatar_url?.replace('-large', '-t50x50') || 'https://placehold.co/50x50/1a1a1a/333333?text=RN'} className="w-12 h-12 md:w-14 md:h-14 object-cover rounded shadow-md mr-3 md:mr-4 flex-shrink-0" alt="" />
                 <div className="flex flex-col min-w-0 flex-1 pr-2">
                   {isMobile ? (
-                    <AutoScrollText>
-                      <span className="font-bold text-sm text-neutral-100">{currentTrack.title}</span>
+                    <p className="font-bold text-sm text-neutral-100 truncate w-full flex items-center gap-2 pr-2">
+                      {currentTrack.title}
                       {currentTrack.user?.username && (
                         <>
-                          <span className="mx-2 text-neutral-500">•</span>
-                          <span className="text-sm text-neutral-400 font-normal">{currentTrack.user.username}</span>
+                          <span className="text-neutral-500 font-normal">·</span>
+                          <span className="text-sm text-neutral-400 font-normal truncate">{currentTrack.user.username}</span>
                         </>
                       )}
-                    </AutoScrollText>
+                    </p>
                   ) : (
                     <>
-                      <AutoScrollText>
-                        <p className="font-bold text-sm text-neutral-100 hover:underline cursor-pointer pr-4">{currentTrack.title}</p>
-                      </AutoScrollText>
-                      <AutoScrollText speed={0.35}>
-                        <p 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (openArtistProfile && currentTrack.user) openArtistProfile(currentTrack.user);
-                          }}
-                          className="text-xs text-neutral-400 hover:underline cursor-pointer mt-0.5 transition-colors pr-4"
-                        >
-                          {currentTrack.user?.username}
-                        </p>
-                      </AutoScrollText>
+                      <p className="font-bold text-sm text-neutral-100 truncate hover:underline cursor-pointer pr-4">{currentTrack.title}</p>
+                      <p 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (openArtistProfile && currentTrack.user) openArtistProfile(currentTrack.user);
+                        }}
+                        className="text-xs text-neutral-400 hover:underline hover:text-white cursor-pointer truncate pr-4"
+                      >
+                        {currentTrack.user?.username}
+                      </p>
                     </>
                   )}
                 </div>
@@ -382,6 +377,10 @@ export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togg
     </>
   );
 }
+
+
+
+
 
 
 

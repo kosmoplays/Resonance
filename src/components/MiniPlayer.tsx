@@ -1,16 +1,14 @@
 import { useEffect } from 'react';
-import { usePlayerStore } from '../store/usePlayerStore';
-import { AutoScrollText } from './AutoScrollText';
+import { usePlayerStore } from "../store/usePlayerStore";
 import { emit, listen } from "@tauri-apps/api/event";
 import { Play, Pause, SkipBack, SkipForward, X, ArrowUpRight, Shuffle, Repeat, Repeat1 } from "lucide-react";
 import { WebviewWindow, getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useMobile } from '../hooks/useMobile';
+import { type } from '@tauri-apps/plugin-os';
 
-
+const isMobile = type() === 'ios' || type() === 'android';
 
 export function MiniPlayer({ togglePlay, playNext, playPrevious, toggleShuffle, cycleLoopMode, onCloseOverlay }: any) {
-  const isMobile = useMobile();
   const { currentTrack, isPlaying, progress, duration, setIsMiniPlayer, isShuffle, loopMode } = usePlayerStore();
   
   const handleExit = async () => {
@@ -95,13 +93,9 @@ export function MiniPlayer({ togglePlay, playNext, playPrevious, toggleShuffle, 
         
         <div className="w-full flex flex-col items-center flex-shrink-0" style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
           <div className="text-center w-full mb-4">
-              <AutoScrollText speed={0.4}>
-                <h2 className="text-[16px] font-bold text-white drop-shadow-lg leading-tight px-1">{currentTrack?.title || "Sin pista"}</h2>
-              </AutoScrollText>
-              <AutoScrollText speed={0.5}>
-                <p className="text-[12px] text-neutral-400 drop-shadow-md px-1">{currentTrack?.user?.username || "Artista desconocido"}</p>
-              </AutoScrollText>
-            </div>
+            <h2 className="text-[16px] font-bold text-white truncate w-full drop-shadow-lg leading-tight">{currentTrack?.title || "Sin pista"}</h2>
+            <p className="text-[12px] text-neutral-400 truncate w-full drop-shadow-md">{currentTrack?.user?.username || "Artista desconocido"}</p>
+          </div>
 
           <div className="w-full flex items-center gap-2 mb-4 px-1">
             <span className="text-[9px] text-neutral-400 w-8 text-right font-medium">{formatTime(progress)}</span>

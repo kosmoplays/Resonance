@@ -1,5 +1,4 @@
 import { usePlayerStore } from '../store/usePlayerStore';
-import { AutoScrollText } from './AutoScrollText';
 import { ListMusic, Trash2, Pin, PinOff, X, ChevronUp, ChevronDown } from 'lucide-react';
 
 interface QueuePanelProps {
@@ -81,13 +80,9 @@ export function QueuePanel({ isPanelPinned, setIsPanelPinned }: QueuePanelProps)
                       className="w-10 h-10 rounded-md object-cover flex-shrink-0 shadow-md"
                     />
                     
-                    <div className="flex-1 min-w-0 flex flex-col justify-center">
-                      <AutoScrollText speed={0.4}>
-                        <p className="text-sm font-semibold text-white leading-tight pr-2">{track.title}</p>
-                      </AutoScrollText>
-                      <AutoScrollText speed={0.5}>
-                        <p className="text-[10px] text-neutral-400 mt-0.5 pr-2">{track.user?.username}</p>
-                      </AutoScrollText>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-white truncate leading-tight">{track.title}</p>
+                      <p className="text-[10px] text-neutral-400 truncate mt-0.5">{track.user?.username}</p>
                     </div>
 
                     <button 
@@ -109,6 +104,3 @@ export function QueuePanel({ isPanelPinned, setIsPanelPinned }: QueuePanelProps)
     </aside>
   );
 }
-
-
-
