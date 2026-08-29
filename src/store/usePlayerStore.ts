@@ -40,7 +40,7 @@ interface PlayerState {
 
    // VARIABLES DE PANEL Y COLA
   queue: Track[];
-  activePanel: 'none' | 'details' | 'queue';
+  activePanel: 'none' | 'details' | 'queue' | 'lyrics';
   autoplayBlacklist: string[];
   localTracks: Track[];
 
@@ -224,6 +224,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     return { queue: newQueue };
   })
 }));
+
 
 
 
