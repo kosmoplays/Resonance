@@ -1,89 +1,298 @@
-import { useEffect, useState } from 'react';
-import { Heart, ListPlus, ListVideo, X, Play, UserPlus } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import {
+  Heart,
+  ListPlus,
+  ListVideo,
+  X,
+  User,
+  Scissors,
+  Link2Off,
+  Plus,
+  Check,
+  PlaySquare,
+} from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 
-export function MobileContextMenu({ track, scProps, audioProps, onClose }: any) {
-  const { toggleLike, likes, scLikes, ytLikes, resonancePlaylists, addTrackToPlaylist } = scProps;
-  const { playNext } = audioProps;
-  const { queue, toggleQueue } = usePlayerStore();
+interface MobileContextMenuProps {
+  track: any;
+  scProps: {
+    toggleLike: (track: any) => void;
+    likes: any[];
+    scLikes: any[];
+    ytLikes: any[];
+    resonancePlaylists: any[];
+    addTrackToPlaylist: (playlistId: string, track: any) => void;
+    openArtistProfile?: (user: any) => void;
+  };
+  audioProps: {
+    playTrack: (track: any) => void;
+  };
+  onClose: () => void;
+  onOpenCuts?: (track: any) => void;
+  onCreatePlaylist?: () => void;
+}
+
+export function MobileContextMenu({
+  track,
+  scProps,
+  audioProps,
+  onClose,
+  onOpenCuts,
+  onCreatePlaylist,
+}: MobileContextMenuProps) {
+  const {
+    toggleLike,
+    likes,
+    scLikes,
+    ytLikes,
+    resonancePlaylists,
+    addTrackToPlaylist,
+    openArtistProfile,
+  } = scProps;
+  const { queue } = usePlayerStore();
 
   const [mounted, setMounted] = useState(false);
   const [showPlaylists, setShowPlaylists] = useState(false);
+  const [addedPlaylistId, setAddedPlaylistId] = useState<string | null>(null);
 
-  useEffect(() => { setMounted(true); return () => setMounted(false); }, []);
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   const close = () => {
     setMounted(false);
-    setTimeout(onClose, 400);
+    setTimeout(onClose, 300);
   };
 
   if (!track) return null;
 
-  const isLiked = likes.some((t: any) => t.id === track.id) || scLikes.some((t: any) => t.id === track.id) || ytLikes.some((t: any) => t.id === track.id);
+  const isLiked =
+    likes.some((t: any) => t.id === track.id) ||
+    scLikes.some((t: any) => t.id === track.id) ||
+    ytLikes.some((t: any) => t.id === track.id);
+
+  const isHybrid = track.providers && track.providers.includes('soundcloud') && track.providers.includes('youtube');
+
+  const artwork = track.artwork_url
+    ? track.artwork_url.replace('-large', '-t300x300')
+    : track.avatar_url
+    ? track.avatar_url.replace('-large', '-t300x300')
+    : 'https://placehold.co/300x300/18181b/ffffff?text=♪';
 
   const handleAddToQueue = () => {
     usePlayerStore.setState({ queue: [...queue, track] });
+    window.dispatchEvent(
+      new CustomEvent('show-toast', { detail: { msg: 'Añadida a la cola', type: 'success' } })
+    );
+    close();
+  };
+
+  const handlePlayNext = () => {
+    usePlayerStore.setState({ queue: [track, ...queue] });
+    window.dispatchEvent(
+      new CustomEvent('show-toast', { detail: { msg: 'Se reproducirá a continuación', type: 'success' } })
+    );
     close();
   };
 
   const handleAddToPlaylist = (playlistId: string) => {
     addTrackToPlaylist(playlistId, track);
+    setAddedPlaylistId(playlistId);
+    window.dispatchEvent(
+      new CustomEvent('show-toast', { detail: { msg: 'Añadida a la playlist', type: 'success' } })
+    );
+    setTimeout(() => close(), 400);
+  };
+
+  const handleUnlink = () => {
+    try {
+      const pairKey = `${track.sc_id || track.id}|${track.yt_videoId}`;
+      const unlinked = JSON.parse(localStorage.getItem('resonance_unlinked') || '[]');
+      if (!unlinked.includes(pairKey)) {
+        unlinked.push(pairKey);
+        localStorage.setItem('resonance_unlinked', JSON.stringify(unlinked));
+      }
+      window.dispatchEvent(
+        new CustomEvent('show-toast', { detail: { msg: 'Fuentes desvinculadas', type: 'info' } })
+      );
+    } catch (e) {}
     close();
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col justify-end">
+    <div className="fixed inset-0 z-[120] flex flex-col justify-end">
       {/* BACKDROP */}
-      <div className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-400 ${mounted ? 'opacity-100' : 'opacity-0'}`} onClick={close} />
+      <div
+        className={`absolute inset-0 bg-black/75 backdrop-blur-md transition-opacity duration-300 ${
+          mounted ? 'opacity-100' : 'opacity-0'
+        }`}
+        onClick={close}
+      />
 
-      {/* SHEET */}
-      <div className={`relative bg-neutral-900 border-t border-white/10 rounded-t-3xl p-6 pb-[calc(env(safe-area-inset-bottom)+24px)] transition-transform duration-400 ease-out ${mounted ? 'translate-y-0' : 'translate-y-full'}`}>
-        
-        <div className="flex items-center gap-4 mb-6 border-b border-white/10 pb-6">
-          <img src={track.artwork_url?.replace('-large', '-t50x50') || 'https://placehold.co/50x50/1a1a1a/333333'} className="w-14 h-14 rounded-lg object-cover" alt="" />
+      {/* BOTTOM SHEET */}
+      <div
+        className={`relative bg-neutral-900/95 border-t border-white/10 rounded-t-[32px] p-6 pb-[max(env(safe-area-inset-bottom,0px),24px)] shadow-[0_-20px_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl transition-transform duration-300 ease-out max-h-[85vh] flex flex-col ${
+          mounted ? 'translate-y-0' : 'translate-y-full'
+        }`}
+      >
+        {/* DRAG HANDLE */}
+        <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-4 flex-shrink-0" />
+
+        {/* TRACK HEADER */}
+        <div className="flex items-center gap-4 pb-4 border-b border-white/10 flex-shrink-0">
+          <img
+            src={artwork}
+            alt={track.title}
+            className="w-14 h-14 rounded-2xl object-cover shadow-lg border border-white/10"
+          />
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-lg truncate text-white">{track.title}</h3>
-            <p className="text-white/50 text-sm truncate">{track.user?.username}</p>
+            <h3 className="font-bold text-base text-white truncate">{track.title}</h3>
+            <p className="text-neutral-400 text-xs truncate mt-0.5">
+              {track.user?.username || track.artist || 'Artista Desconocido'}
+            </p>
           </div>
-          <button onClick={close} className="p-2 bg-white/5 rounded-full text-white/50 active:scale-90"><X size={20} /></button>
+          <button
+            onClick={close}
+            className="p-2 text-neutral-400 active:text-white bg-white/5 rounded-full active:scale-90 transition-transform"
+          >
+            <X size={18} />
+          </button>
         </div>
 
-        {showPlaylists ? (
-          <div className="flex flex-col gap-2 max-h-[40vh] overflow-y-auto">
-            <button onClick={() => setShowPlaylists(false)} className="text-sm text-neutral-400 mb-2 font-bold uppercase tracking-widest text-left">Volver</button>
-            {resonancePlaylists?.map((p: any) => (
-              <button key={p.id} onClick={() => handleAddToPlaylist(p.id)} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl active:bg-white/10">
-                <ListVideo size={20} className="text-[#3b82f6]" />
-                <span className="font-bold">{p.title}</span>
+        {/* CONTENT */}
+        <div className="overflow-y-auto flex-1 mt-4 space-y-1.5">
+          {showPlaylists ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between pb-2">
+                <button
+                  onClick={() => setShowPlaylists(false)}
+                  className="text-xs font-bold text-neutral-400 uppercase tracking-wider hover:text-white"
+                >
+                  ← Volver a opciones
+                </button>
+                {onCreatePlaylist && (
+                  <button
+                    onClick={() => {
+                      close();
+                      onCreatePlaylist();
+                    }}
+                    className="flex items-center gap-1.5 text-xs font-bold text-accent"
+                  >
+                    <Plus size={14} /> Nueva
+                  </button>
+                )}
+              </div>
+
+              {resonancePlaylists && resonancePlaylists.length > 0 ? (
+                resonancePlaylists.map((pl) => {
+                  const isAdded = addedPlaylistId === pl.id;
+                  return (
+                    <button
+                      key={pl.id}
+                      onClick={() => handleAddToPlaylist(pl.id)}
+                      className="w-full flex items-center justify-between p-3.5 bg-white/5 hover:bg-white/10 active:bg-white/15 rounded-2xl transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <ListVideo size={18} className="text-accent flex-shrink-0" />
+                        <span className="font-semibold text-sm text-white truncate">{pl.title}</span>
+                      </div>
+                      {isAdded && <Check size={18} className="text-emerald-400" />}
+                    </button>
+                  );
+                })
+              ) : (
+                <p className="text-center py-6 text-neutral-500 text-sm">No tienes playlists creadas</p>
+              )}
+            </div>
+          ) : (
+            <>
+              {/* LIKE BUTTON */}
+              <button
+                onClick={() => {
+                  toggleLike(track);
+                  close();
+                }}
+                className="w-full flex items-center gap-3.5 p-3.5 bg-white/5 active:bg-white/10 rounded-2xl transition-colors text-left"
+              >
+                <Heart
+                  size={20}
+                  className={isLiked ? 'text-emerald-400 fill-emerald-400' : 'text-neutral-300'}
+                />
+                <span className="font-semibold text-sm text-white">
+                  {isLiked ? 'Quitar de Tus Me Gusta' : 'Añadir a Tus Me Gusta'}
+                </span>
               </button>
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            <button onClick={() => { toggleLike(track); close(); }} className="flex items-center gap-4 p-4 bg-white/5 rounded-xl active:bg-white/10">
-              <Heart size={24} className={`${isLiked ? 'text-[#10b981] fill-[#10b981]' : 'text-white'}`} />
-              <span className="font-bold text-lg">{isLiked ? 'Quitar de Me Gusta' : 'Añadir a Me Gusta'}</span>
-            </button>
 
-            <button onClick={handleAddToQueue} className="flex items-center gap-4 p-4 bg-white/5 rounded-xl active:bg-white/10">
-              <ListPlus size={24} className="text-white" />
-              <span className="font-bold text-lg">Añadir a la Cola</span>
-            </button>
+              {/* PLAY NEXT */}
+              <button
+                onClick={handlePlayNext}
+                className="w-full flex items-center gap-3.5 p-3.5 bg-white/5 active:bg-white/10 rounded-2xl transition-colors text-left"
+              >
+                <PlaySquare size={20} className="text-neutral-300" />
+                <span className="font-semibold text-sm text-white">Reproducir a continuación</span>
+              </button>
 
-            <button onClick={() => setShowPlaylists(true)} className="flex items-center gap-4 p-4 bg-white/5 rounded-xl active:bg-white/10">
-              <ListVideo size={24} className="text-white" />
-              <span className="font-bold text-lg">Añadir a Playlist</span>
-            </button>
+              {/* ADD TO QUEUE */}
+              <button
+                onClick={handleAddToQueue}
+                className="w-full flex items-center gap-3.5 p-3.5 bg-white/5 active:bg-white/10 rounded-2xl transition-colors text-left"
+              >
+                <ListPlus size={20} className="text-neutral-300" />
+                <span className="font-semibold text-sm text-white">Añadir a la cola</span>
+              </button>
 
-            
-          </div>
-        )}
+              {/* ADD TO PLAYLIST */}
+              <button
+                onClick={() => setShowPlaylists(true)}
+                className="w-full flex items-center gap-3.5 p-3.5 bg-white/5 active:bg-white/10 rounded-2xl transition-colors text-left"
+              >
+                <ListVideo size={20} className="text-neutral-300" />
+                <span className="font-semibold text-sm text-white">Añadir a playlist...</span>
+              </button>
 
+              {/* ARTIST PROFILE */}
+              {openArtistProfile && (track.user || track.artist) && (
+                <button
+                  onClick={() => {
+                    close();
+                    openArtistProfile(track.user || { username: track.artist });
+                  }}
+                  className="w-full flex items-center gap-3.5 p-3.5 bg-white/5 active:bg-white/10 rounded-2xl transition-colors text-left"
+                >
+                  <User size={20} className="text-neutral-300" />
+                  <span className="font-semibold text-sm text-white">Ver perfil del artista</span>
+                </button>
+              )}
+
+              {/* RESONANCE CUTS */}
+              {onOpenCuts && (
+                <button
+                  onClick={() => {
+                    close();
+                    onOpenCuts(track);
+                  }}
+                  className="w-full flex items-center gap-3.5 p-3.5 bg-white/5 active:bg-white/10 rounded-2xl transition-colors text-left"
+                >
+                  <Scissors size={20} className="text-neutral-300" />
+                  <span className="font-semibold text-sm text-white">Editar Resonance Cuts</span>
+                </button>
+              )}
+
+              {/* UNLINK HYBRID TRACK */}
+              {isHybrid && (
+                <button
+                  onClick={handleUnlink}
+                  className="w-full flex items-center gap-3.5 p-3.5 bg-red-500/10 text-red-400 active:bg-red-500/20 rounded-2xl transition-colors text-left"
+                >
+                  <Link2Off size={20} />
+                  <span className="font-semibold text-sm">Separar enlace SoundCloud / YouTube</span>
+                </button>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
 }
-
-
-
-

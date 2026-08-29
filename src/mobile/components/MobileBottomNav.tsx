@@ -1,30 +1,66 @@
-import { Home, Search, Library } from 'lucide-react';
+import React from 'react';
+import { Compass, Search, Library, User } from 'lucide-react';
 
-export function MobileBottomNav({ activeTab, setActiveTab, scProps }: any) {
-  const { openView } = scProps;
-  const tabs = [
-    { id: 'home', icon: Home, label: 'Inicio', title: 'Inicio' },
-    { id: 'search', icon: Search, label: 'Buscar', title: 'Búsqueda' },
-    { id: 'library', icon: Library, label: 'Biblioteca', title: 'Librería' },
+export type MobileTab = 'home' | 'search' | 'library' | 'profile';
+
+interface MobileBottomNavProps {
+  activeTab: MobileTab;
+  setActiveTab: (tab: MobileTab) => void;
+  onTabPress?: (tab: MobileTab) => void;
+}
+
+export function MobileBottomNav({
+  activeTab,
+  setActiveTab,
+  onTabPress,
+}: MobileBottomNavProps) {
+  const tabs: { id: MobileTab; label: string; icon: React.ElementType }[] = [
+    { id: 'home', label: 'Descubrir', icon: Compass },
+    { id: 'search', label: 'Buscar', icon: Search },
+    { id: 'library', label: 'Biblioteca', icon: Library },
+    { id: 'profile', label: 'Perfil', icon: User },
   ];
 
   return (
-    <div className="flex items-center justify-around px-2 pt-2 pb-2 border-t border-white/5">
-      {tabs.map(tab => (
-        <button
-          key={tab.id}
-          onClick={() => {
-            setActiveTab(tab.id);
-            openView(tab.title);
-          }}
-          className={`flex flex-col items-center gap-1 p-2 transition-all duration-300 ${
-            activeTab === tab.id ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'
-          }`}
-        >
-          <tab.icon size={22} className={`${activeTab === tab.id ? 'drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : ''}`} />
-          <span className="text-[10px] font-medium tracking-wide">{tab.label}</span>
-        </button>
-      ))}
-    </div>
+    <nav className="w-full bg-neutral-950/90 backdrop-blur-2xl border-t border-white/10 px-4 pt-1.5 pb-[max(env(safe-area-inset-bottom,0px),8px)] flex items-center justify-around z-30 transition-colors">
+      {tabs.map((tab) => {
+        const Icon = tab.icon;
+        const isActive = activeTab === tab.id;
+
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => {
+              setActiveTab(tab.id);
+              if (onTabPress) onTabPress(tab.id);
+            }}
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-2xl transition-all duration-200 active:scale-90 touch-manipulation relative ${
+              isActive ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'
+            }`}
+          >
+            <div className="relative">
+              <Icon
+                size={22}
+                className={`transition-transform duration-200 ${
+                  isActive ? 'scale-110 drop-shadow-[0_0_10px_rgba(255,255,255,0.6)] text-white' : ''
+                }`}
+                strokeWidth={isActive ? 2.4 : 1.8}
+              />
+              {isActive && (
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,1)]" />
+              )}
+            </div>
+            <span
+              className={`text-[10px] tracking-tight mt-1 transition-all ${
+                isActive ? 'font-bold text-white' : 'font-medium text-neutral-400'
+              }`}
+            >
+              {tab.label}
+            </span>
+          </button>
+        );
+      })}
+    </nav>
   );
 }

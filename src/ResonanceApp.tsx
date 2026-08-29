@@ -435,6 +435,69 @@ const [isOffline, setIsOffline] = useState(!navigator.onLine);
     );
   }
 
+  // 📱 BIFURCACIÓN LIMPIA PARA MÓVIL (Experiencia Rediseñada 100% Nativa)
+  if (isMobile) {
+    return (
+      <MobileAppShell
+        audioProps={{
+          audioRef,
+          iframeRef,
+          playTrack,
+          playNext,
+          playPrevious,
+          togglePlay,
+          handleSeek,
+          setIsSeeking,
+          analyserRef,
+          useWidget,
+          isAudioLoading,
+          hasHistory,
+        }}
+        scProps={{
+          viewTitle,
+          isLoadingTracks,
+          searchQuery,
+          setSearchQuery,
+          isSearching,
+          handleSearch,
+          openPlaylist,
+          openView,
+          openArtistProfile,
+          goBack,
+          likes,
+          scLikes,
+          ytLikes,
+          playlists,
+          resonancePlaylists,
+          follows,
+          deletedHistory,
+          recoverTrack,
+          loadLibrary,
+          loadMoreYtLikes,
+          createPlaylist,
+          updatePlaylist,
+          deletePlaylist,
+          addTrackToPlaylist,
+          removeTrackFromPlaylist,
+          toggleFollow,
+          toggleLike,
+          removeLikeExternal,
+        }}
+        lyricsProps={{
+          lyrics,
+          isLoadingLyrics,
+          activeLyricIndex,
+          setLyrics,
+          lyricMode,
+          setLyricMode,
+          customLyricsRaw,
+          setCustomLyricsRaw,
+        }}
+        toast={toast}
+      />
+    );
+  }
+
   return (
     <div
       className="flex flex-col h-full w-full bg-base text-text-main overflow-hidden font-sans selection:bg-accent/30 transition-colors duration-300 relative"
@@ -457,46 +520,26 @@ const [isOffline, setIsOffline] = useState(!navigator.onLine);
       )}
 
       <div className="flex flex-1 overflow-hidden">
-        {(!isMobile || viewTitle === 'Librería') && (
-          <Sidebar
-            isMobile={isMobile}
-            loadLibrary={loadLibrary} handleSearch={handleSearch} searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery} isOffline={isOffline} likes={likes} scLikes={scLikes} ytLikes={ytLikes}
-            playlists={playlists} openPlaylist={openPlaylist} openView={openView} viewTitle={viewTitle}
-            setShowSettings={setShowSettings} resonancePlaylists={resonancePlaylists} createPlaylist={createPlaylist} updatePlaylist={updatePlaylist} deletePlaylist={deletePlaylist}
-            follows={follows}
-          />
-        )}
+        <Sidebar
+          loadLibrary={loadLibrary} handleSearch={handleSearch} searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery} isOffline={isOffline} likes={likes} scLikes={scLikes} ytLikes={ytLikes}
+          playlists={playlists} openPlaylist={openPlaylist} openView={openView} viewTitle={viewTitle}
+          setShowSettings={setShowSettings} resonancePlaylists={resonancePlaylists} createPlaylist={createPlaylist} updatePlaylist={updatePlaylist} deletePlaylist={deletePlaylist}
+          follows={follows}
+        />
 
-        {(!isMobile || viewTitle !== 'Librería') && (
-          <div className="flex-1 flex flex-col min-w-0">
-            {isMobile && viewTitle === 'Búsqueda' && (
-              <div className="p-4 bg-elevated border-b border-white/5 flex-shrink-0 z-10">
-                <form onSubmit={(e) => { e.preventDefault(); handleSearch(e, true); }} className="relative">
-                  <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                  <input
-                    type="search"
-                    placeholder="Buscar en el multiverso..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    autoFocus
-                    className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-[#3b82f6] focus:bg-white/5 transition-all shadow-inner"
-                  />
-                </form>
-              </div>
-            )}
-            <MainContent
-              isLoadingTracks={isLoadingTracks} isSearching={isSearching}
-              playTrack={playTrack} viewTitle={viewTitle}
-              analyserRef={analyserRef} useWidget={useWidget}
-              openArtistProfile={openArtistProfile}
-              likes={likes} scLikes={scLikes} ytLikes={ytLikes} toggleLike={toggleLike} removeLikeExternal={removeLikeExternal}
-              resonancePlaylists={resonancePlaylists} addTrackToPlaylist={addTrackToPlaylist} removeTrackFromPlaylist={removeTrackFromPlaylist}
-              follows={follows} toggleFollow={toggleFollow} goBack={goBack} openPlaylist={openPlaylist}
-              loadMoreYtLikes={loadMoreYtLikes} deletedHistory={deletedHistory} recoverTrack={recoverTrack}
-            />
-          </div>
-        )}
+        <div className="flex-1 flex flex-col min-w-0">
+          <MainContent
+            isLoadingTracks={isLoadingTracks} isSearching={isSearching}
+            playTrack={playTrack} viewTitle={viewTitle}
+            analyserRef={analyserRef} useWidget={useWidget}
+            openArtistProfile={openArtistProfile}
+            likes={likes} scLikes={scLikes} ytLikes={ytLikes} toggleLike={toggleLike} removeLikeExternal={removeLikeExternal}
+            resonancePlaylists={resonancePlaylists} addTrackToPlaylist={addTrackToPlaylist} removeTrackFromPlaylist={removeTrackFromPlaylist}
+            follows={follows} toggleFollow={toggleFollow} goBack={goBack} openPlaylist={openPlaylist}
+            loadMoreYtLikes={loadMoreYtLikes} deletedHistory={deletedHistory} recoverTrack={recoverTrack}
+          />
+        </div>
 
         {/* === PANELES LATERALES FLUIDOS === */}
         
@@ -761,36 +804,6 @@ const [isOffline, setIsOffline] = useState(!navigator.onLine);
         setIsSeeking={setIsSeeking} isAudioLoading={isAudioLoading} hasHistory={hasHistory}
         likes={likes} scLikes={scLikes} ytLikes={ytLikes} toggleLike={toggleLike} openArtistProfile={openArtistProfile}
       />
-
-      {/* BOTTOM NAV BAR (SOLO MÓVIL) */}
-      {isMobile && (
-        <div className="h-[60px] bg-elevated border-t border-white/5 flex items-center justify-around px-2 flex-shrink-0 z-50">
-          <button onClick={() => openView('Inicio', [])} className={`flex flex-col items-center gap-1 p-2 ${viewTitle === 'Inicio' ? 'text-white' : 'text-neutral-500'}`}>
-            <Radio size={22} />
-            <span className="text-[10px] font-medium">Inicio</span>
-          </button>
-
-          <button onClick={() => openView('Librería', [])} className={`flex flex-col items-center gap-1 p-2 ${viewTitle === 'Librería' ? 'text-white' : 'text-neutral-500'}`}>
-            <ListMusic size={22} />
-            <span className="text-[10px] font-medium">Librería</span>
-          </button>
-          
-          <button onClick={() => openView('Búsqueda', [])} className={`flex flex-col items-center gap-1 p-2 ${viewTitle === 'Búsqueda' ? 'text-white' : 'text-neutral-500'}`}>
-            <Search size={22} />
-            <span className="text-[10px] font-medium">Buscar</span>
-          </button>
-
-          <button onClick={() => openView("Mi Perfil", [])} className={`flex flex-col items-center gap-1 p-2 ${viewTitle === 'Mi Perfil' ? 'text-white' : 'text-neutral-500'}`}>
-            <User size={22} />
-            <span className="text-[10px] font-medium">Perfil</span>
-          </button>
-
-          <button onClick={() => setShowSettings(true)} className="flex flex-col items-center gap-1 p-2 text-neutral-500 hover:text-white">
-            <Settings size={22} />
-            <span className="text-[10px] font-medium">Ajustes</span>
-          </button>
-        </div>
-      )}
 
     </div>
   );
