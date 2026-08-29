@@ -107,21 +107,24 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
                       <span className="text-[13px] font-bold text-neutral-300">
                         {((track as any).playback_count || 0) > 0 ? new Intl.NumberFormat('es-ES').format((track as any).playback_count) : ''}
                       </span>
-                      {(() => {
+                                            {(() => {
                         const provs = (track as any).providers || [(track as any).provider || ((track as any).permalink_url || typeof (track as any).id === 'number' ? 'soundcloud' : 'unknown')];
-                        const mainProv = provs[0];
                         return (
-                          <span className="flex items-center opacity-60">
-                            {mainProv === 'youtube' ? (
-                              <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-[#FF0000] drop-shadow-md"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.13 1 12 1 12s0 3.87.46 5.58a2.78 2.78 0 0 0 1.94 2C5.12 20 12 20 12 20s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2C23 15.87 23 12 23 12s0-3.87-.46-5.58z"></path><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"></polygon></svg>
-                            ) : mainProv === 'soundcloud' ? (
-                              <Cloud size={16} className="text-[#ff5500] fill-[#ff5500]/20" />
-                            ) : mainProv === 'local' ? (
-                              <HardDrive size={15} className="text-[#10b981] drop-shadow-md" />
-                            ) : (
-                              <HelpCircle size={15} className="text-neutral-500 opacity-60" />
-                            )}
-                          </span>
+                          <div className="flex items-center gap-1 opacity-60">
+                            {provs.map((prov: string, idx: number) => (
+                              <span key={idx} className="flex items-center">
+                                {prov === 'youtube' ? (
+                                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-[#FF0000] drop-shadow-md"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.13 1 12 1 12s0 3.87.46 5.58a2.78 2.78 0 0 0 1.94 2C5.12 20 12 20 12 20s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2C23 15.87 23 12 23 12s0-3.87-.46-5.58z"></path><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"></polygon></svg>
+                                ) : prov === 'soundcloud' ? (
+                                  <Cloud size={16} className="text-[#ff5500] fill-[#ff5500]/20" />
+                                ) : prov === 'local' ? (
+                                  <HardDrive size={15} className="text-[#10b981] drop-shadow-md" />
+                                ) : (
+                                  <HelpCircle size={15} className="text-neutral-500 opacity-60" />
+                                )}
+                              </span>
+                            ))}
+                          </div>
                         );
                       })()}
                     </div>
@@ -215,5 +218,6 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
     </ul>
   );
 }
+
 
 
