@@ -1,8 +1,7 @@
-import { type } from '@tauri-apps/plugin-os';
-const isMobile = type() === 'ios' || type() === 'android';
-import { Play, Volume2, Cloud, Heart, HelpCircle, ChevronDown, ChevronUp, Unplug, X, HardDrive, MoreVertical } from "lucide-react";
+import { Play, Volume2, Cloud, Heart, HelpCircle, ChevronDown, ChevronUp, Unplug, X, HardDrive } from "lucide-react";
 import { useState } from "react";
 import { usePlayerStore } from "../store/usePlayerStore";
+
 
 interface TrackListProps {
   openArtistProfile?: any;
@@ -59,51 +58,30 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
 
               <div className="flex-1 flex flex-col min-w-0 justify-center">
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1">
-                      {((track as any).providers || [(track as any).provider || ((track as any).permalink_url || typeof (track as any).id === 'number' ? 'soundcloud' : 'unknown')]).map((prov: string, idx: number) => (
-                        <span key={idx} title={prov === 'youtube' ? "Disponible en YouTube" : prov === 'soundcloud' ? "Disponible en SoundCloud" : "Fuente desconocida"} className="flex items-center">
-                          {prov === 'youtube' ? (
-                            <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-[#FF0000] flex-shrink-0 drop-shadow-md">
-                              <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.13 1 12 1 12s0 3.87.46 5.58a2.78 2.78 0 0 0 1.94 2C5.12 20 12 20 12 20s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94 2C23 15.87 23 12 23 12s0-3.87-.46-5.58z"></path>
-                              <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"></polygon>
-                            </svg>
-                          ) : prov === 'soundcloud' ? (
-                            <Cloud size={16} className="text-[#ff5500] flex-shrink-0 fill-[#ff5500]/20" />
-                          ) : prov === 'local' ? (
-                            <HardDrive size={15} className="text-[#10b981] flex-shrink-0 drop-shadow-md" />
-                          ) : (
-                            <HelpCircle size={15} className="text-neutral-500 opacity-60 flex-shrink-0" />
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                  <div className="flex-1 min-w-0 pr-4 flex flex-col justify-center">
-                    <p className={`text-sm font-semibold truncate flex items-center gap-2 ${isActive ? 'text-accent' : 'text-neutral-100'}`}>
-                      {track.title}
-                      {(track.policy === 'SNIP' || track.snipped === true) && (
-                        <span className="text-[9px] font-black bg-[#ff5500]/20 text-[#ff5500] px-1.5 py-0.5 rounded uppercase tracking-widest border border-[#ff5500]/30 shrink-0">
-                          {track.policy === 'SNIP' ? 'Snipped' : 'Cut'}
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-                <div className="w-1/4 hidden md:flex items-center min-w-0 pr-4">
-                  <p 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (openArtistProfile && track.user) openArtistProfile(track.user);
-                    }}
-                    className="text-xs text-neutral-400 truncate mt-0.5 hover:underline hover:text-white cursor-pointer transition-colors w-max relative z-10"
-                  >
-                    {track.user?.username}
+                    
+                  <p className={`text-sm font-semibold truncate flex items-center gap-2 ${isActive ? 'text-accent' : 'text-neutral-100'}`}>
+                    {track.title}
+                    {(track.policy === 'SNIP' || track.snipped === true) && (
+                      <span className="text-[9px] font-black bg-[#ff5500]/20 text-[#ff5500] px-1.5 py-0.5 rounded uppercase tracking-widest border border-[#ff5500]/30 shrink-0">
+                        SNIPPET
+                      </span>
+                    )}
                   </p>
                 </div>
+                <p 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (openArtistProfile && track.user) openArtistProfile(track.user);
+                  }}
+                  className="text-xs text-neutral-400 truncate mt-0.5 hover:underline hover:text-white cursor-pointer transition-colors w-max relative z-10"
+                >
+                  {track.user?.username}
+                </p>
               </div>
 
               <button
                  onClick={(e) => { e.stopPropagation(); toggleLike(track); }}
-                 className={`p-2 transition-all ${isTrackLiked(track) || isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} focus:opacity-100`}
+                 className={`p-2 mx-2 transition-all ${isTrackLiked(track) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} focus:opacity-100`}
                  title="Me Gusta"
                >
                  <Heart
@@ -112,23 +90,8 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
                  />
                </button>
 
-                {/* BOTÓN DE MENÚ CONTEXTUAL (SOLO MÓVIL) */}
-                {isMobile && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      setContextMenu({ visible: true, x: e.pageX, y: e.pageY, track });
-                    }}
-                    className="p-2 mr-2 transition-all opacity-100 text-neutral-400 focus:opacity-100"
-                    title="Opciones"
-                  >
-                    <MoreVertical size={16} />
-                  </button>
-                )}
-
                 {/* 🛡️ BOTÓN DE ELIMINACIÓN DE PISTA (Solo visible en Playlists propias) */}
-                {onRemoveTrack && !isMobile && (
+                {onRemoveTrack && (
                   <button
                     onClick={(e) => { e.stopPropagation(); onRemoveTrack(track.id); }}
                     className="p-2 mr-2 transition-all opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-neutral-500 hover:text-red-400 rounded-full flex-shrink-0"
@@ -138,11 +101,30 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
                   </button>
                 )}
 
-                <div className="hidden md:flex w-48 flex-col items-end justify-center pr-4">
+                                <div className="w-48 flex flex-col items-end justify-center pr-4">
                   <div className="flex flex-col items-end justify-center transition-all duration-300">
-                    <span className="text-[13px] font-bold text-neutral-300">
-                      {((track as any).playback_count || 0) > 0 ? new Intl.NumberFormat('es-ES').format((track as any).playback_count) : ''}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[13px] font-bold text-neutral-300">
+                        {((track as any).playback_count || 0) > 0 ? new Intl.NumberFormat('es-ES').format((track as any).playback_count) : ''}
+                      </span>
+                      {(() => {
+                        const provs = (track as any).providers || [(track as any).provider || ((track as any).permalink_url || typeof (track as any).id === 'number' ? 'soundcloud' : 'unknown')];
+                        const mainProv = provs[0];
+                        return (
+                          <span className="flex items-center opacity-60">
+                            {mainProv === 'youtube' ? (
+                              <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-[#FF0000] drop-shadow-md"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.13 1 12 1 12s0 3.87.46 5.58a2.78 2.78 0 0 0 1.94 2C5.12 20 12 20 12 20s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2C23 15.87 23 12 23 12s0-3.87-.46-5.58z"></path><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"></polygon></svg>
+                            ) : mainProv === 'soundcloud' ? (
+                              <Cloud size={16} className="text-[#ff5500] fill-[#ff5500]/20" />
+                            ) : mainProv === 'local' ? (
+                              <HardDrive size={15} className="text-[#10b981] drop-shadow-md" />
+                            ) : (
+                              <HelpCircle size={15} className="text-neutral-500 opacity-60" />
+                            )}
+                          </span>
+                        );
+                      })()}
+                    </div>
                     {(track as any).providers && (track as any).providers.length > 1 && (
                       <div className="flex items-center gap-2 mt-1 opacity-60 group-hover/stats:opacity-100 transition-opacity">
                         {((track as any).sc_playback || 0) > 0 && (
@@ -206,18 +188,19 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
                                   <svg viewBox="0 0 24 24" fill="currentColor" className="w-2.5 h-2.5 text-[#FF0000]"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.13 1 12 1 12s0 3.87.46 5.58a2.78 2.78 0 0 0 1.94 2C5.12 20 12 20 12 20s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2C23 15.87 23 12 23 12s0-3.87-.46-5.58z"></path><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"></polygon></svg>
                                 ) : prov === 'soundcloud' ? (
                                   <Cloud size={10} className="text-[#ff5500] fill-[#ff5500]/20" />
-                                ) : prov === 'local' ? (
-                                  <HardDrive size={10} className="text-[#10b981]" />
                                 ) : (
-                                  <HelpCircle size={10} className="text-neutral-500 opacity-60" />
+                                  <HelpCircle size={10} className="text-neutral-500" />
                                 )}
                             </div>
                           </div>
                           <div className="flex flex-col min-w-0">
                             <span className="text-[13px] font-semibold text-white truncate group-hover:text-accent transition-colors">{sourceTrack.title}</span>
-                            <span className="text-[10px] text-neutral-400 truncate">{sourceTrack.user?.username}</span>
+                            <span className="text-[10px] text-neutral-400 truncate">{sourceTrack.user?.username} • {prov === 'youtube' ? 'YouTube Music' : 'SoundCloud'}</span>
                           </div>
                         </div>
+                        <span className="text-[10px] text-neutral-500 font-medium whitespace-nowrap">
+                          {(sourceTrack.playback_count || 0) > 0 ? new Intl.NumberFormat('es-ES').format(sourceTrack.playback_count) : '---'} reprod.
+                        </span>
                       </div>
                     );
                   })}
@@ -232,22 +215,4 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
     </ul>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
