@@ -38,57 +38,108 @@ export function useSearchEngine(isOffline: boolean, openView: (title: string, tr
             "&type=video,channel&maxResults=25&relevanceLanguage=es"
           );
 
-          if (!data) return { tracks: [], users: [] };
+          if (data && data.items && data.items.length > 0) {
+            const ytTracks: any[] = [];
+            const ytUsers: any[] = [];
 
-          const ytTracks: any[] = [];
-          const ytUsers: any[] = [];
-
-          for (const item of data.items || []) {
-            const snip = item.snippet;
-            if (item.id.kind === "youtube#video") {
-              const thumb =
-                snip.thumbnails?.high?.url ||
-                snip.thumbnails?.medium?.url ||
-                snip.thumbnails?.default?.url ||
-                "https://placehold.co/500x500/1a1a1a/333333?text=YT";
-              ytTracks.push({
-                id: "yt-" + item.id.videoId,
-                title: snip.title,
-                user: {
-                  id: "yt-user-" + snip.channelId,
-                  username: snip.channelTitle,
+            for (const item of data.items || []) {
+              const snip = item.snippet;
+              if (item.id.kind === "youtube#video") {
+                const thumb =
+                  snip.thumbnails?.high?.url ||
+                  snip.thumbnails?.medium?.url ||
+                  snip.thumbnails?.default?.url ||
+                  "https://placehold.co/500x500/1a1a1a/333333?text=YT";
+                ytTracks.push({
+                  id: "yt-" + item.id.videoId,
+                  title: snip.title,
+                  user: {
+                    id: "yt-user-" + snip.channelId,
+                    username: snip.channelTitle,
+                    provider: "youtube",
+                    yt_id: snip.channelId,
+                  },
+                  artwork_url: thumb,
+                  playback_count: 0,
                   provider: "youtube",
-                  yt_id: snip.channelId,
-                },
-                artwork_url: thumb,
-                playback_count: 0,
-                provider: "youtube",
-                yt_videoId: item.id.videoId,
-              });
-            } else if (item.id.kind === "youtube#channel") {
-              const thumb =
-                snip.thumbnails?.high?.url ||
-                snip.thumbnails?.medium?.url ||
-                snip.thumbnails?.default?.url ||
-                "https://placehold.co/500x500/1a1a1a/333333?text=USER";
-              ytUsers.push({
-                id: "yt-user-" + item.id.channelId,
-                username: snip.title,
-                avatar_url: thumb,
-                permalink: snip.customUrl || snip.title,
-                followers_count: 0,
-                verified: false,
-                provider: "youtube",
-                yt_id: item.id.channelId,
-              });
+                  yt_videoId: item.id.videoId,
+                });
+              } else if (item.id.kind === "youtube#channel") {
+                const thumb =
+                  snip.thumbnails?.high?.url ||
+                  snip.thumbnails?.medium?.url ||
+                  snip.thumbnails?.default?.url ||
+                  "https://placehold.co/500x500/1a1a1a/333333?text=USER";
+                ytUsers.push({
+                  id: "yt-user-" + item.id.channelId,
+                  username: snip.title,
+                  avatar_url: thumb,
+                  permalink: snip.customUrl || snip.title,
+                  followers_count: 0,
+                  verified: false,
+                  provider: "youtube",
+                  yt_id: item.id.channelId,
+                });
+              }
             }
-          }
 
-          return { tracks: ytTracks, users: ytUsers };
-        } catch (err: any) {
-          console.error("fetchYTMusic error:", err);
-          return { tracks: [], users: [] };
-        }
+            return { tracks: ytTracks, users: ytUsers };
+          }
+        } catch (err: any) {}
+
+        // 🛡 FALLBACK: Búsqueda pública de YouTube si no hay OAuth
+        try {
+          const endpoints = [
+            'https://pipedapi.kavin.rocks',
+            'https://api.piped.privacydev.net',
+            'https://pipedapi.leptons.xyz'
+          ];
+          for (const ep of endpoints) {
+            try {
+              const res = await tauriFetch(`${ep}/search?q=${query}&filter=all`, { timeout: 3500 } as any);
+              if (res.ok) {
+                const pData = await res.json();
+                const ytTracks: any[] = [];
+                const ytUsers: any[] = [];
+
+                for (const item of pData.items || []) {
+                  if (item.type === 'stream') {
+                    const videoId = item.url ? item.url.replace('/watch?v=', '') : item.id;
+                    ytTracks.push({
+                      id: 'yt-' + videoId,
+                      title: item.title,
+                      user: {
+                        id: 'yt-user-' + (item.uploaderUrl || item.uploaderName),
+                        username: item.uploaderName,
+                        provider: 'youtube',
+                      },
+                      artwork_url: item.thumbnail || 'https://placehold.co/500x500/1a1a1a/333333?text=YT',
+                      playback_count: item.views || 0,
+                      provider: 'youtube',
+                      yt_videoId: videoId,
+                      duration: item.duration || 0,
+                    });
+                  } else if (item.type === 'channel') {
+                    ytUsers.push({
+                      id: 'yt-user-' + item.url?.replace('/channel/', ''),
+                      username: item.name,
+                      avatar_url: item.avatar || 'https://placehold.co/500x500/1a1a1a/333333?text=USER',
+                      followers_count: item.subscribers || 0,
+                      verified: item.verified || false,
+                      provider: 'youtube',
+                      yt_id: item.url?.replace('/channel/', ''),
+                    });
+                  }
+                }
+                if (ytTracks.length > 0 || ytUsers.length > 0) {
+                  return { tracks: ytTracks, users: ytUsers };
+                }
+              }
+            } catch (e) {}
+          }
+        } catch (err) {}
+
+        return { tracks: [], users: [] };
       };
 
             // --- BÚSQUEDA MULTIVERSO SIMULTÁNEA ---

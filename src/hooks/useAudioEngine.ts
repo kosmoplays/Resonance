@@ -85,6 +85,7 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
     stateRefs.current.currentTrack = track;
     // 3. Actualizamos la Interfaz visual al instante (0ms de ping percibido)
     setCurrentTrack(track);
+    usePlayerStore.getState().addToHistory(track);
     setIsPlaying(false);
     setIsAudioLoading(true);
     setProgress(0);
@@ -317,26 +318,36 @@ const playNext = useCallback((isAuto?: any) => {
 
   }, [useWidget]);
 
-  // --- SMART AUTOPLAY (Continuar reproducción inteligente al terminar lista/tema único) ---
+  // --- SMART AUTOPLAY INTELIGENTE (Promedio de Playlist + Perfil de Gusto) ---
   const triggerSmartAutoplay = async (sourceTrack: Track) => {
     try {
-      const { autoplayBlacklist } = usePlayerStore.getState();
-      const blacklist = autoplayBlacklist || [];
+      const { autoplayBlacklist, listeningHistory } = usePlayerStore.getState();
+      const blacklist = new Set((autoplayBlacklist || []).map(String));
+      const recentPlayedIds = new Set(
+        (listeningHistory || []).slice(0, 15).map((t: any) => String(t.id))
+      );
 
-      // 1. Pistas relacionadas en SoundCloud
+      // 1. Pistas relacionadas directas en SoundCloud
       if (sourceTrack.id && !String(sourceTrack.id).startsWith('yt-')) {
         try {
           const res = await tauriFetch(
-            `https://api-v2.soundcloud.com/tracks/${sourceTrack.id}/related?client_id=${CLIENT_ID}&limit=10`,
+            `https://api-v2.soundcloud.com/tracks/${sourceTrack.id}/related?client_id=${CLIENT_ID}&limit=15`,
             { headers: { Authorization: `OAuth ${getScToken()}` } }
           );
           if (res.ok) {
             const data = await res.json();
             const candidates = (data.collection || []).filter(
-              (t: any) => t && t.id && t.id !== sourceTrack.id && !blacklist.includes(String(t.id))
+              (t: any) =>
+                t &&
+                t.id &&
+                t.id !== sourceTrack.id &&
+                !blacklist.has(String(t.id)) &&
+                !recentPlayedIds.has(String(t.id)) &&
+                t.snipped !== true &&
+                t.policy !== 'BLOCK'
             );
             if (candidates.length > 0) {
-              const chosen = candidates[Math.floor(Math.random() * Math.min(candidates.length, 5))];
+              const chosen = candidates[Math.floor(Math.random() * Math.min(candidates.length, 6))];
               playTrack({ ...chosen, provider: 'soundcloud' });
               return;
             }
@@ -344,18 +355,59 @@ const playNext = useCallback((isAuto?: any) => {
         } catch (e) {}
       }
 
-      // 2. Pistas del mismo artista
+      // 2. Semilla desde la Playlist activa (si había una lista sonando)
+      const activeList = contextTracksRef.current || [];
+      if (activeList.length > 1) {
+        const randomFromList = activeList[Math.floor(Math.random() * activeList.length)];
+        if (randomFromList?.id && !String(randomFromList.id).startsWith('yt-')) {
+          try {
+            const res = await tauriFetch(
+              `https://api-v2.soundcloud.com/tracks/${randomFromList.id}/related?client_id=${CLIENT_ID}&limit=12`,
+              { headers: { Authorization: `OAuth ${getScToken()}` } }
+            );
+            if (res.ok) {
+              const data = await res.json();
+              const candidates = (data.collection || []).filter(
+                (t: any) =>
+                  t &&
+                  t.id &&
+                  t.id !== sourceTrack.id &&
+                  !blacklist.has(String(t.id)) &&
+                  !recentPlayedIds.has(String(t.id)) &&
+                  t.snipped !== true &&
+                  t.policy !== 'BLOCK'
+              );
+              if (candidates.length > 0) {
+                const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+                playTrack({ ...chosen, provider: 'soundcloud' });
+                return;
+              }
+            }
+          } catch (e) {}
+        }
+      }
+
+      // 3. Pistas del mismo artista o género afín
       const artistName = sourceTrack.user?.username || (sourceTrack as any).artist;
       if (artistName) {
         try {
           const res = await tauriFetch(
-            `https://api-v2.soundcloud.com/search/tracks?q=${encodeURIComponent(artistName)}&client_id=${CLIENT_ID}&limit=15`,
+            `https://api-v2.soundcloud.com/search/tracks?q=${encodeURIComponent(
+              artistName
+            )}&client_id=${CLIENT_ID}&limit=20`,
             { headers: { Authorization: `OAuth ${getScToken()}` } }
           );
           if (res.ok) {
             const data = await res.json();
             const candidates = (data.collection || []).filter(
-              (t: any) => t && t.id && t.id !== sourceTrack.id && !blacklist.includes(String(t.id))
+              (t: any) =>
+                t &&
+                t.id &&
+                t.id !== sourceTrack.id &&
+                !blacklist.has(String(t.id)) &&
+                !recentPlayedIds.has(String(t.id)) &&
+                t.snipped !== true &&
+                t.policy !== 'BLOCK'
             );
             if (candidates.length > 0) {
               const chosen = candidates[Math.floor(Math.random() * candidates.length)];
@@ -366,10 +418,10 @@ const playNext = useCallback((isAuto?: any) => {
         } catch (e) {}
       }
 
-      // 3. Fallback a biblioteca activa
+      // 4. Fallback a historial / biblioteca
       const { viewTracks } = usePlayerStore.getState();
       const valid = (viewTracks || []).filter(
-        (t) => t.id !== sourceTrack.id && !blacklist.includes(String(t.id))
+        (t) => t.id !== sourceTrack.id && !blacklist.has(String(t.id))
       );
       if (valid.length > 0) {
         playTrack(valid[Math.floor(Math.random() * valid.length)]);

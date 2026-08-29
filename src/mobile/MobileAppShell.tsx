@@ -40,7 +40,16 @@ export function MobileAppShell({
 
   // Check if we are viewing a drilldown list (e.g. specific Playlist, Liked songs, Artist Profile, etc.)
   const isDrilldown =
-    viewTitle && !['Inicio', 'Búsqueda', 'Librería', 'Mi Perfil'].includes(viewTitle);
+    viewTitle &&
+    !['Inicio', 'Búsqueda', 'Librería', 'Mi Perfil'].includes(viewTitle) &&
+    !viewTitle.startsWith('Resultados:');
+
+  // Si viewTitle cambia a Resultados, asegurar que la pestaña activa sea Búsqueda
+  React.useEffect(() => {
+    if (viewTitle?.startsWith('Resultados:') && activeTab !== 'search') {
+      setActiveTab('search');
+    }
+  }, [viewTitle, activeTab]);
 
   const handleCreatePlaylist = (title: string) => {
     if (createPlaylist) {

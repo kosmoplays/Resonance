@@ -305,46 +305,51 @@ export function MobileTrackListView({
           </div>
         )}
 
-        {/* NON-ARTIST PLAYLIST / LIKES HERO */}
+        {/* NON-ARTIST PLAYLIST / LIKES / ARTIST LIST HERO */}
         {!isArtistProfile && (
           <div className="p-4 my-3 rounded-3xl bg-gradient-to-br from-neutral-900 to-neutral-950 border border-white/10 shadow-lg flex items-center justify-between">
             <div>
               <span className="text-[10px] uppercase font-bold text-accent tracking-wider">
-                Colección
+                {viewTitle === 'Artistas Seguidos' ? 'Artistas' : 'Colección'}
               </span>
               <h1 className="text-xl font-black text-white tracking-tight mt-0.5">{viewTitle}</h1>
               <p className="text-xs text-neutral-400 mt-0.5">
-                {viewTracks?.length || 0} canciones
+                {viewTitle === 'Artistas Seguidos'
+                  ? `${follows?.length || viewTracks?.length || 0} artistas`
+                  : `${viewTracks?.length || 0} canciones`}
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => handlePlayAll(true)}
-                className={`p-3 rounded-2xl transition-all active:scale-90 shadow-md ${
-                  isShuffle
-                    ? 'bg-accent text-white shadow-[0_0_15px_rgba(59,130,246,0.6)]'
-                    : 'bg-white/10 hover:bg-white/20 text-white'
-                }`}
-                aria-label="Reproducir en aleatorio"
-              >
-                <Shuffle size={20} />
-              </button>
+            {/* BOTONES DE PLAY SOLO PARA LISTAS DE CANCIONES (NO PARA LISTA DE ARTISTAS SEGUIDOS) */}
+            {viewTitle !== 'Artistas Seguidos' && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handlePlayAll(true)}
+                  className={`p-3 rounded-2xl transition-all active:scale-90 shadow-md ${
+                    isShuffle
+                      ? 'bg-accent text-white shadow-[0_0_15px_rgba(59,130,246,0.6)]'
+                      : 'bg-white/10 hover:bg-white/20 text-white'
+                  }`}
+                  aria-label="Reproducir en aleatorio"
+                >
+                  <Shuffle size={20} />
+                </button>
 
-              <button
-                type="button"
-                onClick={() => handlePlayAll(false)}
-                className="p-3.5 bg-accent text-white rounded-2xl active:scale-90 transition-all shadow-[0_0_20px_rgba(59,130,246,0.5)]"
-                aria-label={isViewPlaying ? 'Pausar' : 'Reproducir todo'}
-              >
-                {isViewPlaying ? (
-                  <Pause size={22} fill="white" />
-                ) : (
-                  <Play size={22} fill="white" className="ml-0.5" />
-                )}
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => handlePlayAll(false)}
+                  className="p-3.5 bg-accent text-white rounded-2xl active:scale-90 transition-all shadow-[0_0_20px_rgba(59,130,246,0.5)]"
+                  aria-label={isViewPlaying ? 'Pausar' : 'Reproducir todo'}
+                >
+                  {isViewPlaying ? (
+                    <Pause size={22} fill="white" />
+                  ) : (
+                    <Play size={22} fill="white" className="ml-0.5" />
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -357,6 +362,41 @@ export function MobileTrackListView({
                 : 'Cargando canciones...'
             }
           />
+        ) : viewTitle === 'Artistas Seguidos' ? (
+          /* ARTIST CARDS GRID FOR ARTISTAS SEGUIDOS */
+          <div className="grid grid-cols-2 gap-3">
+            {(viewTracks || follows || []).map((artist: any) => {
+              const avatar = artist.avatar_url
+                ? artist.avatar_url.replace('-large', '-t300x300')
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    artist.username || 'Artist'
+                  )}&background=3b82f6&color=fff&size=128`;
+
+              return (
+                <div
+                  key={artist.id}
+                  onClick={() => scProps.openArtistProfile && scProps.openArtistProfile(artist)}
+                  className="flex items-center gap-3 p-3 bg-white/5 active:bg-white/10 rounded-2xl border border-white/5 cursor-pointer active:scale-95 transition-transform"
+                >
+                  <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 bg-neutral-900 flex-shrink-0">
+                    <img src={avatar} alt={artist.username} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs font-bold text-white truncate block">
+                      {artist.username}
+                    </span>
+                    <span className="text-[10px] text-neutral-400 font-medium block mt-0.5">
+                      {artist.followers_count > 0
+                        ? `${new Intl.NumberFormat('es-ES', { notation: 'compact' }).format(
+                            artist.followers_count
+                          )} seguidores`
+                        : 'Artista'}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         ) : (
           /* TRACK LIST */
           <div className="space-y-1">

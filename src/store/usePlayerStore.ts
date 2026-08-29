@@ -48,12 +48,14 @@ interface PlayerState {
   activePanel: 'none' | 'details' | 'queue' | 'lyrics';
   autoplayBlacklist: string[];
   localTracks: Track[];
+  listeningHistory: Track[];
 
   // MUTADORES
   loadLocalTracks: () => Promise<void>;
   addLocalTrack: (track: Track) => Promise<void>;
   removeLocalTrack: (id: string | number) => Promise<void>;
   setCurrentTrack: (track: Track | null) => void;
+  addToHistory: (track: Track) => void;
   setIsPlaying: (playing: boolean) => void;
   setVolume: (volume: number) => void;
   setProgress: (progress: number) => void;
@@ -105,6 +107,13 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   autoplayBlacklist: (() => {
     try {
       return JSON.parse(localStorage.getItem('resonance_blacklist') || '[]');
+    } catch {
+      return [];
+    }
+  })(),
+  listeningHistory: (() => {
+    try {
+      return JSON.parse(localStorage.getItem('resonance_listening_history') || '[]');
     } catch {
       return [];
     }
@@ -207,6 +216,16 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
 
   setCurrentTrack: (track) => set({ currentTrack: track }),
+  addToHistory: (track) => {
+    if (!track || !track.id) return;
+    set((state) => {
+      const prev = state.listeningHistory || [];
+      const filtered = prev.filter((t) => String(t.id) !== String(track.id));
+      const updated = [track, ...filtered].slice(0, 100);
+      localStorage.setItem('resonance_listening_history', JSON.stringify(updated));
+      return { listeningHistory: updated };
+    });
+  },
   setIsPlaying: (playing) => set({ isPlaying: playing }),
   setVolume: (volume) => {
     localStorage.setItem('resonance_volume', volume.toString());

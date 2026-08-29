@@ -51,8 +51,18 @@ export function MobileSearchView({
   const handleGenreClick = (genreName: string) => {
     setSearchQuery(genreName);
     const fakeEvent = { preventDefault: () => {} };
-    handleSearch(fakeEvent, true);
+    handleSearch(fakeEvent, false);
   };
+
+  // Debounced auto-search as the user types
+  React.useEffect(() => {
+    if (!searchQuery || !searchQuery.trim()) return;
+    const timer = setTimeout(() => {
+      const fakeEvent = { preventDefault: () => {} };
+      handleSearch(fakeEvent, false);
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const hasResults =
     (viewTracks && viewTracks.length > 0) ||
