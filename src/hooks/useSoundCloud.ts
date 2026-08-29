@@ -139,6 +139,7 @@ export function useSoundCloud(isOffline: boolean) {
     follows: library.follows,
     deletedHistory: library.deletedHistory,
     recoverTrack: library.recoverTrack,
+    hideFromResonance: library.hideFromResonance,
     loadLibrary: library.loadLibrary,
     loadMoreYtLikes: library.loadMoreYtLikes,
     createPlaylist: library.createPlaylist,

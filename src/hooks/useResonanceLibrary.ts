@@ -476,8 +476,40 @@ export function useResonanceLibrary(isOffline: boolean, viewTitle: string, setPl
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { msg: 'Pista recuperada', type: 'success' } }));
   };
 
+  // 🗑️ OCULTAR DE RESONANCE (Eliminar permanentemente y mandar a Lázaros)
+  const hideFromResonance = async (track: any) => {
+    if (!track) return;
+    const trackIdStr = String(track.id);
+
+    // 1. Guardar en historial de eliminadas bajo "Resonance (Ocultas)"
+    addToDeletedHistory('Resonance (Ocultas)', track);
+
+    // 2. Añadir a la lista negra permanente de autoplay
+    const currentBlacklist = usePlayerStore.getState().autoplayBlacklist;
+    if (!currentBlacklist.includes(trackIdStr)) {
+      const updated = [...currentBlacklist, trackIdStr];
+      usePlayerStore.setState({ autoplayBlacklist: updated });
+      localStorage.setItem('resonance_blacklist', JSON.stringify(updated));
+    }
+
+    // 3. Quitar de likes de Resonance si existía
+    const user = useAuthStore.getState().user;
+    if (user) {
+      try {
+        await supabase.from('resonance_likes').delete().match({ user_id: user.id, track_id: trackIdStr });
+      } catch (e) {}
+      setLikes(prev => prev.filter(t => String(t.id) !== trackIdStr));
+    }
+
+    window.dispatchEvent(
+      new CustomEvent('show-toast', {
+        detail: { msg: 'Canción eliminada de Resonance y enviada a Lázaro', type: 'error' }
+      })
+    );
+  };
+
   return {
-    likes, scLikes, ytLikes, resonancePlaylists, follows, deletedHistory, recoverTrack,
+    likes, scLikes, ytLikes, resonancePlaylists, follows, deletedHistory, recoverTrack, hideFromResonance,
     loadLibrary, loadMoreYtLikes, createPlaylist, updatePlaylist, deletePlaylist, addTrackToPlaylist, removeTrackFromPlaylist, toggleFollow, toggleLike, removeLikeExternal
   };
 }

@@ -20,9 +20,13 @@ export function MobileTrackItem({
   const { currentTrack, isPlaying } = usePlayerStore();
   const isActive = currentTrack?.id === track.id;
 
-  const isSoundCloud = track.provider === 'soundcloud' || (!track.provider && !track.yt_videoId);
-  const isYouTube = track.provider === 'youtube' || Boolean(track.yt_videoId);
-  const isHybrid = track.providers && track.providers.includes('soundcloud') && track.providers.includes('youtube');
+  const isHybrid =
+    Boolean(track.providers && track.providers.includes('soundcloud') && track.providers.includes('youtube')) ||
+    Boolean(track.merged_from && track.merged_from.length > 1) ||
+    Boolean(track.sc_id && track.yt_videoId) ||
+    Boolean(track.provider === 'hybrid');
+  const isYouTube = !isHybrid && (track.provider === 'youtube' || Boolean(track.yt_videoId));
+  const isSoundCloud = !isHybrid && !isYouTube;
 
   const formatDuration = (seconds?: number) => {
     if (!seconds || isNaN(seconds)) return '';

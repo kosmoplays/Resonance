@@ -19,6 +19,7 @@ import {
   Plus,
   Volume2,
   VolumeX,
+  Radio,
 } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { AutoScrollText } from '../../components/AutoScrollText';
@@ -82,6 +83,8 @@ export function MobileFullPlayer({
     removeFromQueue,
     clearQueue,
     trackCuts,
+    isAutoplayEnabled,
+    toggleAutoplay,
   } = usePlayerStore();
 
   const {
@@ -394,60 +397,77 @@ export function MobileFullPlayer({
               </div>
 
               {/* PRIMARY PLAYBACK CONTROLS */}
-              <div className="flex items-center justify-between px-2 mt-3 flex-shrink-0">
+              <div className="flex items-center justify-between px-2 mt-4 flex-shrink-0">
                 <button
                   type="button"
                   onClick={toggleShuffle}
-                  className={`p-3 active:scale-90 transition-transform ${
+                  className={`p-2.5 active:scale-90 transition-transform ${
                     isShuffle ? 'text-accent drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]' : 'text-neutral-500'
                   }`}
                   aria-label="Aleatorio"
                 >
-                  <Shuffle size={22} />
+                  <Shuffle size={20} />
                 </button>
 
                 <button
                   type="button"
                   onClick={playPrevious}
-                  className="p-3 text-white active:scale-90 transition-transform"
+                  className="p-2.5 text-white active:scale-90 transition-transform"
                   aria-label="Canción anterior"
                 >
-                  <SkipBack size={32} fill="currentColor" />
+                  <SkipBack size={28} fill="currentColor" />
                 </button>
 
+                {/* CIRCULAR PERFECT PLAY/PAUSE BUTTON */}
                 <button
                   type="button"
                   onClick={togglePlay}
-                  className="w-18 h-18 rounded-full bg-white text-black flex items-center justify-center shadow-[0_10px_30px_rgba(255,255,255,0.3)] active:scale-90 transition-transform"
+                  className="w-16 h-16 rounded-full aspect-square flex-shrink-0 bg-white text-black flex items-center justify-center shadow-[0_8px_25px_rgba(255,255,255,0.25)] active:scale-90 transition-transform"
                   aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
                 >
                   {isAudioLoading ? (
-                    <Loader2 size={32} className="animate-spin text-black" />
+                    <Loader2 size={28} className="animate-spin text-black" />
                   ) : isPlaying ? (
-                    <Pause size={32} fill="currentColor" />
+                    <Pause size={28} fill="currentColor" />
                   ) : (
-                    <Play size={32} fill="currentColor" className="ml-1" />
+                    <Play size={28} fill="currentColor" className="ml-0.5" />
                   )}
                 </button>
 
                 <button
                   type="button"
                   onClick={playNext}
-                  className="p-3 text-white active:scale-90 transition-transform"
+                  className="p-2.5 text-white active:scale-90 transition-transform"
                   aria-label="Siguiente canción"
                 >
-                  <SkipForward size={32} fill="currentColor" />
+                  <SkipForward size={28} fill="currentColor" />
                 </button>
 
                 <button
                   type="button"
                   onClick={cycleLoopMode}
-                  className={`p-3 active:scale-90 transition-transform relative ${
+                  className={`p-2.5 active:scale-90 transition-transform relative ${
                     loopMode > 0 ? 'text-accent drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]' : 'text-neutral-500'
                   }`}
                   aria-label="Repetición"
                 >
-                  {loopMode === 2 ? <Repeat1 size={22} /> : <Repeat size={22} />}
+                  {loopMode === 2 ? <Repeat1 size={20} /> : <Repeat size={20} />}
+                </button>
+              </div>
+
+              {/* AUTOPLAY TOGGLE ROW */}
+              <div className="flex justify-center mt-3 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={toggleAutoplay}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 ${
+                    isAutoplayEnabled
+                      ? 'bg-accent/15 text-accent border border-accent/30 shadow-[0_0_10px_rgba(59,130,246,0.25)]'
+                      : 'bg-white/5 text-neutral-500 border border-white/10'
+                  }`}
+                >
+                  <Radio size={12} className={isAutoplayEnabled ? 'animate-pulse text-accent' : ''} />
+                  <span>Autoplay {isAutoplayEnabled ? 'Activado' : 'Desactivado'}</span>
                 </button>
               </div>
             </div>

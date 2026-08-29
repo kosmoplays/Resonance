@@ -386,6 +386,46 @@ export function useArtistProfile(
         } catch (err) {
           console.error("Error YT Profile:", err);
         }
+
+        // 🛡 FALLBACK: Búsqueda pública de YouTube si no hay token OAuth o no devolvió canciones
+        if (!ytTracks || ytTracks.length === 0) {
+          try {
+            const pipedEndpoints = [
+              'https://pipedapi.kavin.rocks',
+              'https://api.piped.privacydev.net',
+              'https://pipedapi.leptons.xyz'
+            ];
+            for (const endpoint of pipedEndpoints) {
+              try {
+                const pRes = await tauriFetch(
+                  `${endpoint}/search?q=${encodeURIComponent(artistName)}&filter=music_videos`,
+                  { timeout: 3500 } as any
+                );
+                if (pRes.ok) {
+                  const pData = await pRes.json();
+                  const rawItems = (pData.items || []).filter((item: any) => item.type === 'stream' || item.url?.includes('watch'));
+                  if (rawItems.length > 0) {
+                    ytTracks = rawItems.slice(0, 25).map((item: any) => {
+                      const videoId = item.url ? item.url.replace('/watch?v=', '') : (item.id || '');
+                      return {
+                        id: `yt-${videoId}`,
+                        title: item.title,
+                        user: { username: enrichedUser.username, provider: 'youtube' },
+                        artwork_url: item.thumbnail || enrichedUser.avatar_url || 'https://placehold.co/500x500/1a1a1a/333333?text=YT',
+                        playback_count: item.views || 0,
+                        provider: 'youtube',
+                        yt_videoId: videoId,
+                        duration: item.duration || 0,
+                      };
+                    });
+                    if (!enrichedUser.providers.includes('youtube')) enrichedUser.providers.push('youtube');
+                    break;
+                  }
+                }
+              } catch (e) {}
+            }
+          } catch (e) {}
+        }
       };
 
       await Promise.all([fetchSC(), fetchYT()]);

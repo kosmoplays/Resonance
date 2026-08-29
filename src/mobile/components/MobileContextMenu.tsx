@@ -10,6 +10,7 @@ import {
   Plus,
   Check,
   PlaySquare,
+  Trash2,
 } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 
@@ -23,9 +24,11 @@ interface MobileContextMenuProps {
     resonancePlaylists: any[];
     addTrackToPlaylist: (playlistId: string, track: any) => void;
     openArtistProfile?: (user: any) => void;
+    hideFromResonance?: (track: any) => void;
   };
   audioProps: {
     playTrack: (track: any) => void;
+    playNext?: () => void;
   };
   onClose: () => void;
   onOpenCuts?: (track: any) => void;
@@ -299,12 +302,40 @@ export function MobileContextMenu({
               {isHybrid && (
                 <button
                   onClick={handleUnlink}
-                  className="w-full flex items-center gap-3.5 p-3.5 bg-red-500/10 text-red-400 active:bg-red-500/20 rounded-2xl transition-colors text-left"
+                  className="w-full flex items-center gap-3.5 p-3.5 bg-white/5 active:bg-white/10 rounded-2xl transition-colors text-left"
                 >
-                  <Link2Off size={20} />
-                  <span className="font-semibold text-sm">Separar enlace SoundCloud / YouTube</span>
+                  <Link2Off size={20} className="text-amber-400" />
+                  <span className="font-semibold text-sm text-amber-400">
+                    Separar enlace SoundCloud / YouTube
+                  </span>
                 </button>
               )}
+
+              {/* ELIMINAR DE RESONANCE (MANDAR A LÁZARO Y NUNCA VOLVER A REPRODUCIR) */}
+              <button
+                onClick={() => {
+                  if (scProps.hideFromResonance) {
+                    scProps.hideFromResonance(track);
+                  } else {
+                    usePlayerStore.getState().toggleAutoplayBlacklist(String(track.id));
+                  }
+                  if (usePlayerStore.getState().currentTrack?.id === track.id) {
+                    if (audioProps.playNext) audioProps.playNext();
+                  }
+                  close();
+                }}
+                className="w-full flex items-center gap-3.5 p-3.5 bg-red-500/10 active:bg-red-500/20 border border-red-500/20 rounded-2xl transition-colors text-left"
+              >
+                <Trash2 size={20} className="text-red-400 flex-shrink-0" />
+                <div className="min-w-0">
+                  <span className="font-bold text-sm text-red-400 block leading-tight">
+                    Eliminar de Resonance
+                  </span>
+                  <span className="text-[10px] text-red-300/70 block mt-0.5">
+                    Mandar a Lázaros y no volver a reproducir
+                  </span>
+                </div>
+              </button>
             </>
           )}
         </div>

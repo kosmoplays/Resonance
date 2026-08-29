@@ -144,19 +144,63 @@ export function MobileHomeView({
     fetchRadar();
   }, [follows]);
 
-  // Seed For You Recommendations
-  useEffect(() => {
-    const allLikes = [...(likes || []), ...(scLikes || []), ...(ytLikes || [])];
-    if (allLikes.length > 0) {
-      const shuffled = [...allLikes].sort(() => 0.5 - Math.random()).slice(0, 10);
-      setForYouTracks(shuffled);
+  // Fetch fresh discovery tracks for "Especial Para Ti"
+  // (Excluye terminantemente: tus Me Gusta, YouTube, Lázaros y Blacklist)
+  const fetchForYou = async () => {
+    try {
+      const allLikes = [...(likes || []), ...(scLikes || []), ...(ytLikes || [])];
+      const likedIds = new Set(allLikes.map((t: any) => String(t.id)));
+      const deletedHistory = (scProps as any).deletedHistory || {};
+      const deletedIds = new Set(
+        Object.values(deletedHistory).flatMap((arr: any) => (arr || []).map((t: any) => String(t.id)))
+      );
+      const blacklist = usePlayerStore.getState().autoplayBlacklist || [];
+      const blacklistSet = new Set(blacklist.map(String));
+
+      const genresList = ['dance', 'electronic', 'trap', 'hiphop', 'r-b', 'indie', 'pop'];
+      const randomGenre = genresList[Math.floor(Math.random() * genresList.length)];
+      const res = await tauriFetch(
+        `https://api-v2.soundcloud.com/tracks?genres=${randomGenre}&limit=35&client_id=${CLIENT_ID}`,
+        { headers: { Authorization: `OAuth ${getScToken()}` } }
+      );
+
+      if (res.ok) {
+        const data = await res.json();
+        const raw = data.collection || [];
+        const filtered = raw
+          .filter((t: any) => {
+            if (!t || !t.id) return false;
+            const idStr = String(t.id);
+            // 1. NO en tus Me Gusta
+            if (likedIds.has(idStr)) return false;
+            // 2. NO de YouTube
+            if (t.provider === 'youtube' || t.yt_videoId || idStr.startsWith('yt-')) return false;
+            // 3. NO en mis Lázaros
+            if (deletedIds.has(idStr)) return false;
+            // 4. NO en Blacklist
+            if (blacklistSet.has(idStr)) return false;
+            // 5. Debe ser reproducible
+            if (t.snipped === true || t.policy === 'BLOCK') return false;
+            return true;
+          })
+          .map((t: any) => ({ ...t, provider: 'soundcloud' }))
+          .slice(0, 10);
+
+        setForYouTracks(filtered);
+      }
+    } catch (err) {
+      console.error('Error cargando Para Ti:', err);
     }
-  }, [likes?.length, scLikes?.length, ytLikes?.length]);
+  };
+
+  useEffect(() => {
+    fetchForYou();
+  }, [likes?.length, scLikes?.length]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     loadLibrary();
-    await fetchRadar();
+    await Promise.all([fetchRadar(), fetchForYou()]);
     setIsRefreshing(false);
   };
 

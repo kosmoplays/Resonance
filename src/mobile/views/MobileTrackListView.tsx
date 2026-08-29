@@ -24,6 +24,7 @@ interface MobileTrackListViewProps {
     follows?: any[];
     loadMoreYtLikes?: () => void;
     openArtistProfile?: (user: any) => void;
+    openPlaylist?: (playlist: any, title?: string, isResonance?: boolean) => void;
     isLoadingTracks?: boolean;
     isSearching?: boolean;
   };
@@ -234,6 +235,72 @@ export function MobileTrackListView({
                   {artistData.bio}
                 </p>
               )}
+
+              {/* ARTIST ACTION BUTTONS */}
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => handlePlayAll(false)}
+                  className="flex-1 py-3 px-4 bg-accent text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(59,130,246,0.4)] active:scale-95 transition-all"
+                >
+                  {isViewPlaying ? <Pause size={18} fill="white" /> : <Play size={18} fill="white" className="ml-0.5" />}
+                  <span>{isViewPlaying ? 'Pausar' : 'Reproducir'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handlePlayAll(true)}
+                  className="p-3 bg-white/10 active:bg-white/20 text-white rounded-2xl shadow-md active:scale-95 transition-all"
+                  title="Reproducción aleatoria del artista"
+                  aria-label="Reproducir artista en aleatorio"
+                >
+                  <Shuffle size={18} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ARTIST ALBUMS & EPS CAROUSEL */}
+        {isArtistProfile && artistData?.albums && artistData.albums.length > 0 && (
+          <div className="my-4 space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                Álbumes y Lanzamientos ({artistData.albums.length})
+              </h3>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-3 px-3 scrollbar-none">
+              {artistData.albums.map((album: any) => {
+                const albArt =
+                  album.artwork_url ||
+                  album.avatar_url ||
+                  'https://placehold.co/300x300/18181b/ffffff?text=Album';
+
+                return (
+                  <div
+                    key={album.id}
+                    onClick={() => {
+                      if (scProps.openPlaylist) {
+                        scProps.openPlaylist(album, album.title);
+                      }
+                    }}
+                    className="w-32 flex-shrink-0 group cursor-pointer active:scale-95 transition-transform"
+                  >
+                    <div className="w-32 h-32 rounded-2xl overflow-hidden bg-neutral-900 border border-white/10 shadow-lg mb-1.5">
+                      <img
+                        src={albArt}
+                        alt={album.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                    <h4 className="text-xs font-bold text-white truncate">{album.title}</h4>
+                    <p className="text-[10px] text-neutral-400 mt-0.5">
+                      {album.track_count ? `${album.track_count} temas` : 'Álbum'}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
