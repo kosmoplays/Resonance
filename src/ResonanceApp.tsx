@@ -422,7 +422,7 @@ const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   if (isMiniWindow) {
     return (
-      <div className="flex flex-col h-screen w-screen bg-[#0a0a0a] overflow-hidden">
+      <div className="flex flex-col h-full w-full bg-[#0a0a0a] overflow-hidden">
         <MiniPlayer 
             togglePlay={handleTogglePlay} 
             playNext={handlePlayNext} 
@@ -436,7 +436,7 @@ const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   return (
     <div
-      className="flex flex-col h-screen w-screen bg-base text-text-main overflow-hidden font-sans selection:bg-accent/30 transition-colors duration-300 relative"
+      className="flex flex-col h-full w-full bg-base text-text-main overflow-hidden font-sans selection:bg-accent/30 transition-colors duration-300 relative"
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => e.preventDefault()}
     >
@@ -794,6 +794,8 @@ const [isOffline, setIsOffline] = useState(!navigator.onLine);
     </div>
   );
 }
+
+
 
 
 

@@ -140,7 +140,7 @@ export function MainContent({
     const activeResonancePlaylist = resonancePlaylists?.find((p: any) => p.title === viewTitle);
 
     return (
-      <main className="flex-1 flex flex-col min-w-0 bg-base relative overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 bg-base relative overflow-hidden ">
         
         {/* FLECHA DE RETROCESO FIJA ABSOLUTA (INMÓVIL AL SCROLL) */}
         {!isMobile && viewTitle !== "Inicio" && (
@@ -773,6 +773,8 @@ export function MainContent({
       </main>
   );
 }
+
+
 
 
 

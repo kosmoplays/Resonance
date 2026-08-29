@@ -110,3 +110,5 @@ export function QueuePanel({ isPanelPinned, setIsPanelPinned }: QueuePanelProps)
   );
 }
 
+
+

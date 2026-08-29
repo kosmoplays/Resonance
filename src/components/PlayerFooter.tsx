@@ -102,7 +102,10 @@ export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togg
            handleSeek={handleSeek} 
         />
       )}
-      <footer className={`flex-shrink-0 w-full bg-elevated border-t border-white/5 flex z-50 ${isMobile ? 'flex-col justify-center h-[130px] px-4 gap-2' : 'items-center h-[90px] px-6'}`}>
+      <footer 
+        className={`flex-shrink-0 flex z-50 ${isMobile ? 'flex-col justify-center gap-2 mx-2 p-3 bg-black/70 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_15px_40px_rgba(0,0,0,0.6)]' : 'w-full bg-elevated border-t border-white/5 items-center h-[90px] px-6'}`}
+        style={isMobile ? { marginBottom: '8px' } : {}}
+      >
         
         {/* LADO IZQUIERDO: Info de pista */}
         <div className={`${isMobile ? 'w-full flex items-center justify-between mb-1' : 'w-1/3 flex items-center min-w-0 pr-2'}`}>
@@ -212,11 +215,13 @@ export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togg
             <span className="w-8 md:w-10 text-right">{formatTime(progress)}</span>
             
             <div className="flex-1 relative group flex items-center h-4 cursor-pointer">
-              <div className="absolute w-full h-1 bg-neutral-800 rounded-full overflow-hidden pointer-events-none">
+              <div className="absolute w-full h-1.5 md:h-1 bg-neutral-800 rounded-full pointer-events-none">
                 <div
-                  className="h-full bg-white group-hover:bg-[#3b82f6] transition-all duration-100 ease-linear"
+                  className="h-full bg-white group-hover:bg-[#3b82f6] transition-all duration-100 ease-linear rounded-full relative"
                   style={{ width: `${duration > 0 ? (progress / duration) * 100 : 0}%` }}
-                />
+                >
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)] md:opacity-0 md:group-hover:opacity-100 transition-opacity" />
+                </div>
               </div>
               <input
                 type="range" min="0" max={duration || 100} value={progress || 0}
@@ -377,4 +382,7 @@ export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togg
     </>
   );
 }
+
+
+
 
