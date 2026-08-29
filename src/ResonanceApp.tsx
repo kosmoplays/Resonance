@@ -23,6 +23,7 @@ import { MainContent } from "./components/MainContent";
 import { QueuePanel } from './components/QueuePanel';
 import { PlayerFooter } from "./components/PlayerFooter";
 import { MiniPlayer } from "./components/MiniPlayer";
+import { MobileAppShell } from "./mobile/MobileAppShell";
 import { useMobile } from './hooks/useMobile';
 import { supabase } from "./lib/supabase";
 
@@ -794,6 +795,8 @@ const [isOffline, setIsOffline] = useState(!navigator.onLine);
     </div>
   );
 }
+
+
 
 
 
