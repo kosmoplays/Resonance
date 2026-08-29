@@ -32,17 +32,21 @@ jobs:
 
       - name: Build Tauri iOS App (Unsigned)
         run: |
-          # Create an interceptor to inject codesign disabled flags into xcodebuild
-          mkdir -p .github/bin
-          echo '#!/bin/bash' > .github/bin/xcodebuild
-          echo 'exec /usr/bin/xcodebuild "$@" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGNING_IDENTITY=""' >> .github/bin/xcodebuild
-          chmod +x .github/bin/xcodebuild
-          
-          # Add our fake xcodebuild to PATH so Tauri uses it
-          export PATH="$PWD/.github/bin:$PATH"
-          
-          # Build the app (Tauri might still return a non-zero exit code due to post-build IPA export failure, which is fine)
+          # First run tauri ios build to prepare the rust side and project (it will fail at codesign, which is fine)
           npx tauri ios build || true
+          
+          echo "Buscando proyecto Xcode..."
+          cd src-tauri/gen/apple
+          
+          # Find the iOS scheme dynamically
+          SCHEME=$(xcodebuild -project *.xcodeproj -list | awk '/Schemes:/{flag=1; next} flag' | grep -i 'ios' | head -n 1 | xargs)
+          if [ -z "$SCHEME" ]; then
+            SCHEME=$(xcodebuild -project *.xcodeproj -list | awk '/Schemes:/{flag=1; next} flag' | grep -i 'resonance' | head -n 1 | xargs)
+          fi
+          echo "Found scheme: $SCHEME"
+          
+          # Force build with Xcode directly
+          xcodebuild -project *.xcodeproj -scheme "$SCHEME" -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGNING_IDENTITY="" || true
 
       - name: Generate .ipa Payload
         run: |
