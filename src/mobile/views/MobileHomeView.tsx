@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { fetch as tauriFetch } from '@tauri-apps/plugin-http';
 import {
   Sparkles,
-  Radio,
   Play,
   Volume2,
   Heart,
@@ -16,6 +15,8 @@ import {
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { MobileTrackItem } from '../components/MobileTrackItem';
+import { MobileLoadingState } from '../components/MobileLoadingState';
+import { ResonanceLogo } from '../../components/ResonanceLogo';
 
 const CLIENT_ID = 'lmRjTI0FqeXygHMXc3hRzS7hth20PNk5';
 const getScToken = () => localStorage.getItem('soundcloud_oauth_token') || '';
@@ -78,6 +79,14 @@ export function MobileHomeView({
   const [isLoadingRadar, setIsLoadingRadar] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // User avatar calculation
+  const email = user?.email || '';
+  const defaultUsername = email ? email.split('@')[0] : 'Resonance';
+  const username = user?.user_metadata?.username || user?.user_metadata?.custom_username || defaultUsername;
+  const userAvatar =
+    user?.user_metadata?.avatar_url ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=3b82f6&color=fff&size=128`;
+
   // Fetch Release Radar (Concurrent for followed artists)
   const fetchRadar = async () => {
     if (!follows || follows.length === 0) {
@@ -88,15 +97,16 @@ export function MobileHomeView({
     setIsLoadingRadar(true);
     try {
       const allLatestTracks: any[] = [];
-      const promises = follows.slice(0, 15).map(async (artist: any) => {
+      const promises = follows.slice(0, 20).map(async (artist: any) => {
         const scId = artist.sc_id || (artist.provider === 'soundcloud' ? artist.id : null);
         const ytId =
           artist.yt_id ||
           (artist.provider === 'youtube'
-            ? artist.id.toString().replace('yt-user-', '')
+            ? String(artist.id).replace('yt-user-', '')
             : null);
 
-        if (scId && !scId.toString().startsWith('yt-')) {
+        // SoundCloud probe
+        if (scId && !String(scId).startsWith('yt-')) {
           try {
             const res = await tauriFetch(
               `https://api-v2.soundcloud.com/users/${scId}/tracks?client_id=${CLIENT_ID}&limit=3`,
@@ -120,7 +130,7 @@ export function MobileHomeView({
       const sorted = allLatestTracks
         .filter((t) => t.created_at)
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 10);
+        .slice(0, 15);
 
       setRadarTracks(sorted);
     } catch (e) {
@@ -129,18 +139,19 @@ export function MobileHomeView({
     }
   };
 
-  // Seed For You Recommendations
+  // Trigger radar fetch when follows change
   useEffect(() => {
     fetchRadar();
+  }, [follows]);
 
-    // Create algorithmic discovery tracks from user likes
+  // Seed For You Recommendations
+  useEffect(() => {
     const allLikes = [...(likes || []), ...(scLikes || []), ...(ytLikes || [])];
     if (allLikes.length > 0) {
-      // Shuffle likes and take top 10 as recommended seeds
       const shuffled = [...allLikes].sort(() => 0.5 - Math.random()).slice(0, 10);
       setForYouTracks(shuffled);
     }
-  }, [follows?.length, likes?.length]);
+  }, [likes?.length, scLikes?.length, ytLikes?.length]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -153,13 +164,16 @@ export function MobileHomeView({
 
   return (
     <div className="h-full w-full overflow-y-auto pt-[max(env(safe-area-inset-top,0px),16px)] pb-36 px-4 space-y-6 select-none">
-      {/* TOP HEADER */}
+      {/* TOP HEADER WITH LOGO & AVATAR */}
       <header className="flex items-center justify-between pt-2">
-        <div>
-          <span className="text-[10px] font-bold tracking-widest text-accent uppercase">
-            Resonance Music
-          </span>
-          <h1 className="text-2xl font-black text-white tracking-tight">Descubrir</h1>
+        <div className="flex items-center gap-3">
+          <ResonanceLogo size={36} />
+          <div>
+            <span className="text-[10px] font-bold tracking-widest text-accent uppercase block -mb-0.5">
+              Multiverso Musical
+            </span>
+            <h1 className="text-2xl font-black text-white tracking-tight leading-none">Descubrir</h1>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -177,12 +191,19 @@ export function MobileHomeView({
           <button
             type="button"
             onClick={() => onNavigateTab('profile')}
-            className="w-9 h-9 rounded-full bg-gradient-to-tr from-accent to-purple-600 p-[1.5px] shadow-lg active:scale-95 transition-transform"
+            className="w-10 h-10 rounded-2xl overflow-hidden border-2 border-white/15 shadow-lg active:scale-95 transition-transform bg-neutral-900 flex-shrink-0"
             aria-label="Perfil"
           >
-            <div className="w-full h-full rounded-full bg-neutral-900 flex items-center justify-center text-white font-bold text-xs">
-              {user?.email ? user.email.charAt(0).toUpperCase() : <User size={16} />}
-            </div>
+            <img
+              src={userAvatar}
+              alt={username}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                  username
+                )}&background=3b82f6&color=fff&size=128`;
+              }}
+            />
           </button>
         </div>
       </header>
@@ -233,14 +254,7 @@ export function MobileHomeView({
         </div>
 
         {isLoadingRadar ? (
-          <div className="flex items-center gap-3 py-6 overflow-x-hidden">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="w-36 h-48 bg-white/5 rounded-3xl animate-pulse flex-shrink-0"
-              />
-            ))}
-          </div>
+          <MobileLoadingState message="Buscando nuevos lanzamientos de tus artistas..." className="py-10" />
         ) : radarTracks.length > 0 ? (
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none">
             {radarTracks.map((track) => {
@@ -284,11 +298,18 @@ export function MobileHomeView({
               );
             })}
           </div>
+        ) : follows && follows.length > 0 ? (
+          <div className="p-5 rounded-2xl bg-white/5 border border-white/5 text-center">
+            <Disc3 size={24} className="mx-auto text-neutral-500 mb-2 opacity-50" />
+            <p className="text-xs text-neutral-400 font-medium">
+              Tus artistas seguidos no tienen lanzamientos en los últimos 30 días.
+            </p>
+          </div>
         ) : (
           <div className="p-5 rounded-2xl bg-white/5 border border-white/5 text-center">
             <Disc3 size={24} className="mx-auto text-neutral-500 mb-2 opacity-50" />
             <p className="text-xs text-neutral-400 font-medium">
-              Sigue a tus artistas favoritos en SoundCloud para ver sus últimos lanzamientos aquí.
+              Sigue a tus artistas favoritos en Resonance para ver sus últimos lanzamientos aquí.
             </p>
           </div>
         )}
@@ -303,15 +324,17 @@ export function MobileHomeView({
               onClick={() => openView('Artistas Seguidos', follows)}
               className="text-xs font-semibold text-accent hover:underline"
             >
-              Ver todos
+              Ver todos ({follows.length})
             </button>
           </div>
 
           <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none">
-            {follows.slice(0, 15).map((artist: any) => {
+            {follows.map((artist: any) => {
               const avatar = artist.avatar_url
                 ? artist.avatar_url.replace('-large', '-t300x300')
-                : 'https://placehold.co/100x100/18181b/ffffff?text=👤';
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    artist.username || 'Artist'
+                  )}&background=3b82f6&color=fff&size=128`;
 
               return (
                 <div
@@ -345,7 +368,7 @@ export function MobileHomeView({
           </div>
 
           <div className="space-y-1">
-            {forYouTracks.slice(0, 5).map((track, idx) => (
+            {forYouTracks.slice(0, 6).map((track, idx) => (
               <MobileTrackItem
                 key={`${track.id}-${idx}`}
                 track={track}

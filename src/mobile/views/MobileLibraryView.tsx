@@ -288,7 +288,9 @@ export function MobileLibraryView({
               follows.map((artist: any) => {
                 const avatar = artist.avatar_url
                   ? artist.avatar_url.replace('-large', '-t300x300')
-                  : 'https://placehold.co/100x100/18181b/ffffff?text=👤';
+                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      artist.username || 'Artist'
+                    )}&background=3b82f6&color=fff&size=128`;
 
                 return (
                   <div

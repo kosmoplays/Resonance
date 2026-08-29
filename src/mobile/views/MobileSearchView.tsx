@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, X, Loader2, User, ListMusic, Sparkles, Flame, Radio } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { MobileTrackItem } from '../components/MobileTrackItem';
+import { MobileLoadingState } from '../components/MobileLoadingState';
 
 interface MobileSearchViewProps {
   scProps: {
@@ -125,10 +126,7 @@ export function MobileSearchView({
 
       {/* LOADING STATE */}
       {isSearching && (
-        <div className="py-20 flex flex-col items-center justify-center text-neutral-400 gap-3">
-          <Loader2 size={32} className="animate-spin text-accent" />
-          <p className="text-xs font-semibold tracking-wider">Escaneando SoundCloud y YouTube...</p>
-        </div>
+        <MobileLoadingState message="Escaneando SoundCloud y YouTube..." className="py-20" />
       )}
 
       {/* RESULTS LIST */}

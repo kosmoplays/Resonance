@@ -38,7 +38,7 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
 
  // Leemos y escribimos en nuestro "Cerebro" (Zustand)
   const {
-    currentTrack, viewTracks, volume, isShuffle, loopMode, progress, queue, autoplayBlacklist, trackCuts, isPlaying,
+    currentTrack, viewTracks, volume, isShuffle, loopMode, progress, duration, queue, autoplayBlacklist, trackCuts, isPlaying,
     setCurrentTrack, setIsPlaying, setProgress, setDuration,
   } = usePlayerStore();
 
@@ -623,19 +623,74 @@ const checkWidget = () => {
     };
   }, [useWidget, currentTrack]);
 
-  // --- MEDIA SESSION (Controles de Windows/Teclado) ---
+  // --- MEDIA SESSION (Controles de iOS Lock Screen / Windows / Teclado) ---
   useEffect(() => {
     if ('mediaSession' in navigator && currentTrack) {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: currentTrack.title, artist: currentTrack.user?.username,
-        artwork: [{ src: currentTrack.artwork_url?.replace('-large', '-t500x500') || 'https://placehold.co/500x500/1a1a1a/333333?text=RN', sizes: '500x500', type: 'image/jpeg' }]
-      });
-      navigator.mediaSession.setActionHandler('play', togglePlay);
-      navigator.mediaSession.setActionHandler('pause', togglePlay);
-      navigator.mediaSession.setActionHandler('previoustrack', playPrevious);
-      navigator.mediaSession.setActionHandler('nexttrack', playNext);
+      const trackAny = currentTrack as any;
+      const artUrl = currentTrack.artwork_url
+        ? currentTrack.artwork_url.replace('-large', '-t500x500')
+        : trackAny.avatar_url
+        ? trackAny.avatar_url.replace('-large', '-t500x500')
+        : 'https://placehold.co/500x500/18181b/ffffff?text=Resonance';
+
+      const artistName = currentTrack.user?.username || trackAny.artist || 'Resonance';
+
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: currentTrack.title || 'Resonance Music',
+          artist: artistName,
+          album: 'Resonance',
+          artwork: [
+            { src: artUrl, sizes: '96x96', type: 'image/jpeg' },
+            { src: artUrl, sizes: '128x128', type: 'image/jpeg' },
+            { src: artUrl, sizes: '192x192', type: 'image/jpeg' },
+            { src: artUrl, sizes: '256x256', type: 'image/jpeg' },
+            { src: artUrl, sizes: '384x384', type: 'image/jpeg' },
+            { src: artUrl, sizes: '512x512', type: 'image/jpeg' },
+          ],
+        });
+
+        navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+
+        navigator.mediaSession.setActionHandler('play', () => togglePlay());
+        navigator.mediaSession.setActionHandler('pause', () => togglePlay());
+        navigator.mediaSession.setActionHandler('previoustrack', () => playPrevious());
+        navigator.mediaSession.setActionHandler('nexttrack', () => playNext());
+        navigator.mediaSession.setActionHandler('seekto', (details) => {
+          if (details.seekTime !== undefined && details.seekTime !== null) {
+            handleSeek(details.seekTime);
+          }
+        });
+        navigator.mediaSession.setActionHandler('seekforward', (details) => {
+          const skipTime = details.seekOffset || 10;
+          handleSeek(Math.min(usePlayerStore.getState().duration, usePlayerStore.getState().progress + skipTime));
+        });
+        navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+          const skipTime = details.seekOffset || 10;
+          handleSeek(Math.max(0, usePlayerStore.getState().progress - skipTime));
+        });
+      } catch (err) {
+        console.warn('MediaSession update failed:', err);
+      }
     }
-  }, [currentTrack, togglePlay, playPrevious, playNext]);
+  }, [currentTrack, isPlaying, togglePlay, playPrevious, playNext, handleSeek]);
+
+  // Sincronizar posición de reproducción con MediaSession (para scrub bar en pantalla de bloqueo)
+  useEffect(() => {
+    if ('mediaSession' in navigator && 'setPositionState' in navigator.mediaSession) {
+      const dur = usePlayerStore.getState().duration;
+      const prog = usePlayerStore.getState().progress;
+      if (dur > 0 && prog >= 0 && prog <= dur) {
+        try {
+          navigator.mediaSession.setPositionState({
+            duration: dur,
+            playbackRate: 1,
+            position: prog,
+          });
+        } catch (e) {}
+      }
+    }
+  }, [progress, duration]);
 
   // --- 🛡 INTERCEPTOR REMOTO (MINI-PLAYER COMPOSITOR GLOBAL) ---
   // --- 🛡️ INTERCEPTOR REMOTO (MINI-PLAYER COMPOSITOR GLOBAL) ---

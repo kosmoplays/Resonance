@@ -39,18 +39,13 @@ export function MobileBottomNav({
               isActive ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'
             }`}
           >
-            <div className="relative">
-              <Icon
-                size={22}
-                className={`transition-transform duration-200 ${
-                  isActive ? 'scale-110 drop-shadow-[0_0_10px_rgba(255,255,255,0.6)] text-white' : ''
-                }`}
-                strokeWidth={isActive ? 2.4 : 1.8}
-              />
-              {isActive && (
-                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,1)]" />
-              )}
-            </div>
+            <Icon
+              size={22}
+              className={`transition-transform duration-200 ${
+                isActive ? 'scale-110 drop-shadow-[0_0_10px_rgba(255,255,255,0.6)] text-white' : ''
+              }`}
+              strokeWidth={isActive ? 2.4 : 1.8}
+            />
             <span
               className={`text-[10px] tracking-tight mt-1 transition-all ${
                 isActive ? 'font-bold text-white' : 'font-medium text-neutral-400'

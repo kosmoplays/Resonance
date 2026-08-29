@@ -115,10 +115,25 @@ export function MobileFullPlayer({
   if (!currentTrack) return null;
   const trackAny = currentTrack as any;
 
+  const trackIdStr = String(currentTrack.id);
+  const trackYtId = currentTrack.yt_videoId;
+
   const isLiked =
-    likes.some((t: any) => t.id === currentTrack.id) ||
-    scLikes.some((t: any) => t.id === currentTrack.id) ||
-    ytLikes.some((t: any) => t.id === currentTrack.id);
+    (likes &&
+      likes.some(
+        (t: any) =>
+          String(t.id) === trackIdStr || (trackYtId && t.yt_videoId === trackYtId)
+      )) ||
+    (scLikes &&
+      scLikes.some(
+        (t: any) =>
+          String(t.id) === trackIdStr || (trackYtId && t.yt_videoId === trackYtId)
+      )) ||
+    (ytLikes &&
+      ytLikes.some(
+        (t: any) =>
+          String(t.id) === trackIdStr || (trackYtId && t.yt_videoId === trackYtId)
+      ));
 
   const isSoundCloud = currentTrack.provider === 'soundcloud' || (!currentTrack.provider && !currentTrack.yt_videoId);
   const isYouTube = currentTrack.provider === 'youtube' || Boolean(currentTrack.yt_videoId);
@@ -317,10 +332,11 @@ export function MobileFullPlayer({
                 >
                   <Heart
                     size={24}
+                    fill={isLiked ? '#34d399' : 'none'}
                     className={`transition-colors duration-200 ${
                       isLiked
-                        ? 'text-emerald-400 fill-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.6)]'
-                        : 'hover:text-white'
+                        ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.6)]'
+                        : 'text-neutral-400 hover:text-white'
                     }`}
                   />
                 </button>

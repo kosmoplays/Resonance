@@ -67,10 +67,25 @@ export function MobileContextMenu({
 
   if (!track) return null;
 
+  const trackIdStr = String(track.id);
+  const trackYtId = track.yt_videoId;
+
   const isLiked =
-    likes.some((t: any) => t.id === track.id) ||
-    scLikes.some((t: any) => t.id === track.id) ||
-    ytLikes.some((t: any) => t.id === track.id);
+    (likes &&
+      likes.some(
+        (t: any) =>
+          String(t.id) === trackIdStr || (trackYtId && t.yt_videoId === trackYtId)
+      )) ||
+    (scLikes &&
+      scLikes.some(
+        (t: any) =>
+          String(t.id) === trackIdStr || (trackYtId && t.yt_videoId === trackYtId)
+      )) ||
+    (ytLikes &&
+      ytLikes.some(
+        (t: any) =>
+          String(t.id) === trackIdStr || (trackYtId && t.yt_videoId === trackYtId)
+      ));
 
   const isHybrid = track.providers && track.providers.includes('soundcloud') && track.providers.includes('youtube');
 
@@ -217,7 +232,8 @@ export function MobileContextMenu({
               >
                 <Heart
                   size={20}
-                  className={isLiked ? 'text-emerald-400 fill-emerald-400' : 'text-neutral-300'}
+                  fill={isLiked ? '#34d399' : 'none'}
+                  className={isLiked ? 'text-emerald-400' : 'text-neutral-300'}
                 />
                 <span className="font-semibold text-sm text-white">
                   {isLiked ? 'Quitar de Tus Me Gusta' : 'Añadir a Tus Me Gusta'}
