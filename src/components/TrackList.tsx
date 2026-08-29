@@ -133,10 +133,10 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
                             {new Intl.NumberFormat('es-ES', { notation: "compact", maximumFractionDigits: 1 }).format((track as any).sc_playback)}
                           </span>
                         )}
-                        {((track as any).yt_playback || 0) > 0 && (
+                        {(track as any).providers?.includes('youtube') && (
                           <span className="flex items-center gap-1 text-[9.5px] text-[#FF0000] font-semibold" title={`YouTube: ${new Intl.NumberFormat('es-ES').format((track as any).yt_playback)}`}>
                             <svg viewBox="0 0 24 24" fill="currentColor" className="w-2.5 h-2.5"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.13 1 12 1 12s0 3.87.46 5.58a2.78 2.78 0 0 0 1.94 2C23 15.87 23 12 23 12s0-3.87-.46-5.58z"></path><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"></polygon></svg>
-                            {new Intl.NumberFormat('es-ES', { notation: "compact", maximumFractionDigits: 1 }).format((track as any).yt_playback)}
+                            {((track as any).yt_playback || 0) > 0 ? new Intl.NumberFormat('es-ES', { notation: 'compact', maximumFractionDigits: 1 }).format((track as any).yt_playback) : '---'}
                           </span>
                         )}
                       </div>
@@ -215,4 +215,5 @@ export function TrackList({ tracks, currentTrack, playTrack, setContextMenu, lik
     </ul>
   );
 }
+
 
