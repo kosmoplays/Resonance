@@ -78,6 +78,11 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_http::init());
 
+    #[cfg(any(target_os = "android", target_os = "ios"))]
+    {
+        builder = builder.plugin(tauri_plugin_ios_webview_insets::init());
+    }
+
     #[cfg(desktop)]
     {
         builder = builder

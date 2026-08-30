@@ -169,12 +169,12 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
                   if (json.url) return json.url;
                   throw new Error("No audio stream in Cobalt");
                 })(),
-                ...invidiousNodes.map(async (node) => {
+                                ...invidiousNodes.map(async (node) => {
                   const res = await tauriFetch(`${node}/api/v1/videos/${ytId}`);
                   if (!res.ok) throw new Error(`Invidious error: ${res.status}`);
                   const json = await res.json();
                   const formats = json.adaptiveFormats || [];
-                  // CAMBIO: Excluimos webm, solo permitimos mp4 o m4a
+                  // NUNCA webm: iOS no lo decodifica
                   const audioFormat = formats.find((f: any) => f.type?.includes('audio/mp4') || f.container === 'm4a');
                   if (audioFormat?.url) return audioFormat.url;
                   throw new Error("No audio stream in Invidious");
@@ -184,11 +184,10 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
                   if (!res.ok) throw new Error(`Piped error: ${res.status}`);
                   const json = await res.json();
                   const audioFormats = json.audioStreams || [];
-                  // CAMBIO: Filtramos los formatos para coger solo m4a o aac (compatibles con iOS)
-                  const compatible = audioFormats.filter((f: any) => f.codec === 'm4a' || f.codec === 'aac' || f.mimeType?.includes('mp4'));
-                  const best = (compatible.length > 0 ? compatible : audioFormats).sort((a: any, b: any) => b.bitrate - a.bitrate)[0];
+                  const compatible = audioFormats.filter((f: any) => f.mimeType?.includes('mp4') || f.codec === 'aac' || f.codec === 'm4a');
+                  const best = compatible.sort((a: any, b: any) => b.bitrate - a.bitrate)[0];
                   if (best?.url) return best.url;
-                  throw new Error("No audio stream in Piped");
+                  throw new Error("No compatible (m4a/aac) stream in Piped");
                 })
               ];
 
@@ -784,6 +783,26 @@ const checkWidget = () => {
 
     checkWidget();
   }, [playNext]);
+
+// --- DESBLOQUEO DE AUDIO EN IOS (una sola vez, en el primer toque real) ---
+useEffect(() => {
+  const unlockAudio = () => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.muted = true;
+      audio.play().then(() => {
+        audio.pause();
+        audio.muted = false;
+      }).catch(() => { audio.muted = false; });
+    }
+  };
+  document.addEventListener('touchend', unlockAudio, { once: true });
+  document.addEventListener('click', unlockAudio, { once: true });
+  return () => {
+    document.removeEventListener('touchend', unlockAudio);
+    document.removeEventListener('click', unlockAudio);
+  };
+}, []);
 
 // --- MOTOR B (Controlador de Troyano Híbrido SC + YT) ---
   useEffect(() => {
