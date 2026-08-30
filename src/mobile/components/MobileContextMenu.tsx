@@ -58,6 +58,31 @@ export function MobileContextMenu({
   const [showPlaylists, setShowPlaylists] = useState(false);
   const [addedPlaylistId, setAddedPlaylistId] = useState<string | null>(null);
 
+  // Swipe / Drag down to dismiss gesture state
+  const touchStartY = React.useRef<number | null>(null);
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartY.current === null) return;
+    const diffY = e.touches[0].clientY - touchStartY.current;
+    if (diffY > 0) {
+      setDragOffsetY(diffY);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartY.current !== null && dragOffsetY > 80) {
+      close();
+    } else {
+      setDragOffsetY(0);
+    }
+    touchStartY.current = null;
+  };
+
   useEffect(() => {
     setMounted(true);
     return () => setMounted(false);
@@ -150,6 +175,12 @@ export function MobileContextMenu({
 
       {/* BOTTOM SHEET */}
       <div
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{
+          transform: dragOffsetY > 0 ? `translateY(${dragOffsetY}px)` : undefined,
+        }}
         className={`relative bg-neutral-900/95 border-t border-white/10 rounded-t-[32px] p-6 pb-[max(env(safe-area-inset-bottom,0px),24px)] shadow-[0_-20px_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl transition-transform duration-300 ease-out max-h-[85vh] flex flex-col ${
           mounted ? 'translate-y-0' : 'translate-y-full'
         }`}

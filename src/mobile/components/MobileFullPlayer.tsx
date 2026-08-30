@@ -105,6 +105,19 @@ export function MobileFullPlayer({
   const [showHeartPop, setShowHeartPop] = useState(false);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
+  // Active lyric element reference for auto-scroll
+  const activeLyricRef = useRef<HTMLParagraphElement | null>(null);
+
+  useEffect(() => {
+    if (activeTab === 'lyrics' && activeLyricRef.current) {
+      activeLyricRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'nearest',
+      });
+    }
+  }, [activeLyricIndex, activeTab]);
+
   // Swipe / Drag down to dismiss gesture state
   const touchStartY = useRef<number | null>(null);
   const touchStartX = useRef<number | null>(null);
@@ -180,6 +193,7 @@ export function MobileFullPlayer({
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    if (activeTab !== 'player') return;
     if (touchStartY.current === null) return;
     const diffY = e.touches[0].clientY - touchStartY.current;
     if (diffY > 0) {
@@ -475,8 +489,13 @@ export function MobileFullPlayer({
 
           {/* TAB 2: LIVE LYRICS VIEW */}
           {activeTab === 'lyrics' && (
-            <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-200 relative">
-              <div className="flex-1 overflow-y-auto scroll-smooth py-12 px-2 text-center space-y-7">
+            <div
+              className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-200 relative"
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
+            >
+              <div className="flex-1 overflow-y-auto scroll-smooth py-12 px-4 text-center space-y-6 scrollbar-none">
                 {isLoadingLyrics ? (
                   <div className="flex flex-col items-center justify-center h-full text-neutral-400 animate-pulse">
                     <Mic2 size={36} className="mb-3 opacity-50 text-accent" />
@@ -490,13 +509,14 @@ export function MobileFullPlayer({
                     return (
                       <p
                         key={idx}
+                        ref={isActive ? activeLyricRef : null}
                         onClick={() => handleSeek(line.time)}
-                        className={`text-xl font-bold cursor-pointer transition-all duration-300 select-none ${
+                        className={`cursor-pointer transition-all duration-300 select-none px-2 break-words whitespace-normal max-w-full leading-snug ${
                           isActive
-                            ? 'text-white scale-110 drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] font-black'
+                            ? 'text-white font-black text-xl md:text-2xl drop-shadow-[0_0_20px_rgba(255,255,255,0.7)]'
                             : isPast
-                            ? 'text-neutral-500'
-                            : 'text-neutral-600'
+                            ? 'text-neutral-500 text-lg font-bold hover:text-neutral-300'
+                            : 'text-neutral-600 text-lg font-bold hover:text-neutral-400'
                         }`}
                       >
                         {line.text || '♪'}
@@ -504,7 +524,7 @@ export function MobileFullPlayer({
                     );
                   })
                 ) : lyrics ? (
-                  <p className="text-base text-neutral-300 leading-relaxed whitespace-pre-wrap">
+                  <p className="text-base text-neutral-300 leading-relaxed whitespace-pre-wrap break-words px-4">
                     {lyrics}
                   </p>
                 ) : (
@@ -519,7 +539,12 @@ export function MobileFullPlayer({
 
           {/* TAB 3: QUEUE VIEW */}
           {activeTab === 'queue' && (
-            <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-200">
+            <div
+              className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-200"
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
+            >
               <div className="flex items-center justify-between pb-3 border-b border-white/10 flex-shrink-0">
                 <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
                   {queue.length} {queue.length === 1 ? 'pista en cola' : 'pistas en cola'}
