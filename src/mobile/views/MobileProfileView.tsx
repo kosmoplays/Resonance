@@ -101,7 +101,28 @@ export function MobileProfileView({ scProps }: MobileProfileViewProps) {
   const handleSaveYtToken = async () => {
     if (ytTokenInput.trim() && user?.id) {
       const token = ytTokenInput.trim();
-      localStorage.setItem('youtube_access_token', token);
+      
+      if (token.startsWith('1//')) {
+        localStorage.setItem('youtube_refresh_token', token);
+        try {
+           const refreshRes = await fetch("https://oauth2.googleapis.com/token", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                 client_id: "237657675945-gs5o7vfoi2i5c7lu86q8u4c8jb56rcle.apps.googleusercontent.com",
+                 client_secret: "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",
+                 refresh_token: token,
+                 grant_type: "refresh_token"
+              })
+           });
+           const refreshData = await refreshRes.json();
+           if (refreshData.access_token) {
+               localStorage.setItem('youtube_access_token', refreshData.access_token);
+           }
+        } catch(e) {}
+      } else {
+        localStorage.setItem('youtube_access_token', token);
+      }
 
       try {
         await supabase.from('linked_accounts').upsert({
@@ -465,7 +486,7 @@ export function MobileProfileView({ scProps }: MobileProfileViewProps) {
           <div className="bg-neutral-900 border border-white/10 rounded-3xl p-6 w-full max-w-sm space-y-4 animate-in zoom-in-95 duration-200">
             <h3 className="text-base font-bold text-white">Vincular Cuenta de YouTube</h3>
             <p className="text-xs text-neutral-400">
-              Pega tu token de acceso OAuth / Google de YouTube para sincronizar tus me gusta y playlists en el móvil. Se actualizará tu vinculación sin tocar la de PC.
+              Pega tu <strong>youtube_refresh_token</strong> (suele empezar por <code>1//</code>). Puedes encontrarlo en tu PC abriendo Resonance, pulsando <code>F12</code>, yendo a "Aplicación" &gt; "Almacenamiento Local". Esto evitará que caduque en el móvil.
             </p>
             <input
               type="text"
