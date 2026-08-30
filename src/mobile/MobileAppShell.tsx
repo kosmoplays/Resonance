@@ -186,12 +186,13 @@ export function MobileAppShell({
       <audio
         ref={audioProps.audioRef}
         playsInline
-        style={{ position: 'fixed', top: -9999, left: -9999, width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
+        crossOrigin="anonymous"
+        style={{ position: 'absolute', top: 0, left: 0, width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
       />
       <iframe
         ref={audioProps.iframeRef}
-        allow="autoplay; encrypted-media"
-        style={{ position: 'fixed', top: -9999, left: -9999, width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
+        allow="autoplay; encrypted-media; playsinline"
+        style={{ position: 'absolute', top: 0, left: 0, width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
         src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/2126409108&auto_play=false"
       />
     </div>
