@@ -17,8 +17,9 @@ export function MobileTrackItem({
   onOpenContext,
   showIndex = false,
 }: MobileTrackItemProps) {
-  const { currentTrack, isPlaying } = usePlayerStore();
+  const { currentTrack, isPlaying, autoplayBlacklist } = usePlayerStore();
   const isActive = currentTrack?.id === track.id;
+  const isBlacklisted = Boolean(track?.id && autoplayBlacklist && autoplayBlacklist.includes(String(track.id)));
 
   const isHybrid =
     Boolean(track.providers && track.providers.includes('soundcloud') && track.providers.includes('youtube')) ||
@@ -45,6 +46,8 @@ export function MobileTrackItem({
     <div
       onClick={() => onPlay(track)}
       className={`group flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-all duration-200 active:scale-[0.98] ${
+        isBlacklisted ? 'opacity-40 grayscale-[40%] hover:opacity-80' : ''
+      } ${
         isActive
           ? 'bg-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)] border border-white/10'
           : 'hover:bg-white/5 active:bg-white/10'
@@ -88,7 +91,7 @@ export function MobileTrackItem({
         <div className="flex items-center gap-1.5">
           <span
             className={`text-sm font-semibold truncate leading-tight ${
-              isActive ? 'text-white font-bold' : 'text-neutral-100'
+              isActive ? 'text-white font-bold' : isBlacklisted ? 'text-neutral-400' : 'text-neutral-100'
             }`}
           >
             {track.title}
@@ -97,6 +100,12 @@ export function MobileTrackItem({
 
         <div className="flex items-center gap-1.5 mt-0.5">
           {/* PROVIDER BADGES */}
+          {isBlacklisted ? (
+            <span className="px-1.5 py-[1px] text-[8.5px] font-bold rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              No Autoplay
+            </span>
+          ) : null}
+
           {isHybrid ? (
             <span className="px-1.5 py-[1px] text-[9px] font-bold rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-0.5">
               <span>SC</span>

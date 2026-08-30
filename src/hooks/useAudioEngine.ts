@@ -61,12 +61,14 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
   }, [volume, useWidget]);
 
 // --- FUNCIONES DE CONTROL ---
-  const playTrack = async (track: Track) => {
+  const playTrack = async (track: Track, customContext?: Track[]) => {
     console.log(`\n\n--- INICIANDO REPRODUCCIÓN: ${track.title} ---`);
     if (stateRefs.current.currentTrack?.id === track.id) { togglePlay(); return; }
 
-    // 🛡️ ANCLAJE DE CONTEXTO: Si el usuario hizo clic manual (no es salto automático), congelamos la playlist actual.
-    if (!isSystemNavigationRef.current) {
+    // 🛡️ ANCLAJE DE CONTEXTO: Si se proporciona una lista explícita, la fijamos. Si no, mantenemos la lista previa.
+    if (customContext && customContext.length > 0) {
+      contextTracksRef.current = [...customContext];
+    } else if (!isSystemNavigationRef.current && contextTracksRef.current.length === 0) {
       contextTracksRef.current = [...stateRefs.current.viewTracks];
     }
     isSystemNavigationRef.current = false; // Reset del gatillo de sistema
@@ -79,11 +81,8 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
     isGoingBackRef.current = false; // Reseteamos el semáforo
 
     // --- 🛡️ ESCUDO ANTI-SPAM MULTIHILO (CANCELLATION TOKEN) 🛡️ ---
-    // 1. Sellamos esta ejecución como la ÚNICA válida.
     latestTrackIdRef.current = track.id;
-    // 2. Mutamos la memoria síncrona INMEDIATAMENTE para que clics rápidos no dupliquen el historial
     stateRefs.current.currentTrack = track;
-    // 3. Actualizamos la Interfaz visual al instante (0ms de ping percibido)
     setCurrentTrack(track);
     usePlayerStore.getState().addToHistory(track);
     setIsPlaying(false);
@@ -95,24 +94,18 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
     if (audioRef.current && !audioRef.current.paused) {
       const audio = audioRef.current;
       const startVol = audio.volume;
-      // Interpolación acústica de 250ms (simulando decaída Doppler de un caza)
       for (let i = 1; i <= 10; i++) {
         setTimeout(() => {
-          // CORTAFUEGOS INTERNO: Si el usuario saltó de canción mientras hacíamos fade-out, abortamos la caída física
           if (latestTrackIdRef.current !== track.id) return;
           if (audio) {
-            audio.playbackRate = Math.max(0.4, 1 - (i * 0.06)); // Caída del pitch
-            audio.volume = Math.max(0, startVol - (startVol * (i / 10))); // Caída logarítmica del volumen
+            audio.playbackRate = Math.max(0.4, 1 - (i * 0.06));
+            audio.volume = Math.max(0, startVol - (startVol * (i / 10)));
           }
         }, i * 25);
       }
-      // Suspensión del hilo principal para permitir que la física de audio se procese
       await new Promise(resolve => setTimeout(resolve, 280));
     }
 
-    // --- 🛑 DESTRUCTOR DE PROMESAS ZOMBIES 🛑 ---
-    // Si después del delay de 280ms el ID activo es diferente, el usuario spameó el botón de saltar.
-    // Abortamos esta ejecución silenciosamente para evitar pistas superpuestas en múltiples reproductores.
     if (latestTrackIdRef.current !== track.id) {
       console.warn(`⏭️ [ANTI-SPAM] Carga de '${track.title}' abortada por salto múltiple concurrente.`);
       return;
@@ -123,7 +116,6 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
       audioRef.current.pause();
       audioRef.current.removeAttribute('src');
       audioRef.current.load();
-      // Revertimos las anomalías físicas para la siguiente pista
       audioRef.current.playbackRate = 1.0;
       audioRef.current.volume = usePlayerStore.getState().volume;
     }
@@ -144,54 +136,65 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
           return;
         }
 
-        // --- INTERCEPTOR DE YOUTUBE AAA (ARRANQUE SÍNCRONO) ---
+        // --- INTERCEPTOR DE YOUTUBE AAA (ARRANQUE ULTRA-RÁPIDO) ---
         if ((track as any).provider === 'youtube' || track.id.toString().startsWith('yt-')) {
             const ytId = (track as any).yt_videoId || track.id.toString().replace('yt-', '');
             
-            // 1. INTENTO DE EXTRACCIÓN PURA ULTRA-RÁPIDA (Piped API + Timeout)
-            console.log("🔴 [YOUTUBE] Pista detectada. Interceptando flujo de audio puro...");
-            const nodes = ["https://pipedapi.kavin.rocks", "https://pipedapi.tokhmi.xyz", "https://pipedapi.smnz.de"];
+            console.log("🔴 [YOUTUBE] Pista detectada. Interceptando flujo de audio...");
             
+            // 1. Extracción con Nodos Invidious + Piped en Paralelo
+            const invidiousNodes = [
+              "https://invidious.nerdvpn.de",
+              "https://inv.nadeko.net",
+              "https://invidious.jing.rocks",
+              "https://yt.artemislena.eu"
+            ];
+            const pipedNodes = [
+              "https://pipedapi.kavin.rocks",
+              "https://pipedapi.tokhmi.xyz",
+              "https://pipedapi.smnz.de"
+            ];
+
             try {
-              // Segurador de latencia: Si Piped tarda más de 2.5s, forzamos el aborto.
-              const timeoutPromise = new Promise<any>((_, reject) => setTimeout(() => reject(new Error("Timeout de extracción")), 2500));
-              
-              const fetchPromise = (Promise as any).any(
-                nodes.map(async (node: string) => {
+              const fetchTasks = [
+                ...invidiousNodes.map(async (node) => {
+                  const res = await tauriFetch(`${node}/api/v1/videos/${ytId}`);
+                  if (!res.ok) throw new Error("Invidious error");
+                  const json = await res.json();
+                  const formats = json.adaptiveFormats || [];
+                  const audioFormat = formats.find((f: any) => f.type?.includes('audio/webm') || f.type?.includes('audio/mp4') || f.container === 'm4a');
+                  if (audioFormat?.url) return audioFormat.url;
+                  throw new Error("No audio stream in Invidious");
+                }),
+                ...pipedNodes.map(async (node) => {
                   const res = await tauriFetch(`${node}/streams/${ytId}`);
-                  if (!res.ok) throw new Error("Fallo nodo");
-                  return await res.json();
+                  if (!res.ok) throw new Error("Piped error");
+                  const json = await res.json();
+                  const audioFormats = json.audioStreams || [];
+                  const best = audioFormats.find((f: any) => f.bitrate > 0) || audioFormats[0];
+                  if (best?.url) return best.url;
+                  throw new Error("No audio stream in Piped");
                 })
-              );
+              ];
 
-              // Carrera mortal: Gana el primer nodo en responder o el temporizador
-              const data = await Promise.race([fetchPromise, timeoutPromise]).catch(() => null);
-
-              if (data && data.audioStreams) {
-                const L = 0; // Bypass del linter
-                const audioFormats = data.audioStreams;
-                // Buscamos el stream de audio con el bitrate más alto, o el primero por defecto
-                const bestAudio = audioFormats.find((f: any) => f.bitrate > 0) || audioFormats[L];
-
-                if (bestAudio && bestAudio.url && latestTrackIdRef.current === track.id) {
-                  console.log("✅ [YOUTUBE] Audio puro extraído. Inyectando en la Cajita Mágica...");
-                  setTrackUrl(bestAudio.url);
-                  return; // Terminamos aquí. El MOTOR A (Nativo) toma el control absoluto.
-                }
+              const streamUrl = await (Promise as any).any(fetchTasks);
+              if (streamUrl && latestTrackIdRef.current === track.id) {
+                console.log("✅ [YOUTUBE] Audio puro extraído con éxito.");
+                setTrackUrl(streamUrl);
+                return;
               }
-            } catch (e) { console.error("Error extrayendo audio de YT", e); }
+            } catch (e) {
+              console.warn("⚠️ Extracción pura de YT falló, pasando a reproductor secundario.", e);
+            }
 
-            // 2. FALLBACK DE EMERGENCIA (Caballo de Troya original si fallan los nodos o hay latencia)
-            console.log("⚠️ [YOUTUBE] Extracción pura falló o fue lenta. Cayendo al Caballo de Troya (Iframe)...");
+            // 2. FALLBACK EMBEBIDO (Iframe)
             setUseWidget(true);
             activeWidgetRef.current = 'youtube';
 
             if (ytWidgetRef.current && ytReadyRef.current) {
-              // Carga y arranca el vídeo instantáneamente (Object notation fuerza el Autoplay)
               ytWidgetRef.current.loadVideoById({ videoId: ytId });
               setTimeout(() => { try { ytWidgetRef.current.setVolume(usePlayerStore.getState().volume * 65); } catch(e){} }, 100);
             } else {
-              // Fallback rápido
               const playYT = () => {
                 if (latestTrackIdRef.current !== track.id) return;
                 if (ytWidgetRef.current && ytReadyRef.current) {
@@ -671,8 +674,8 @@ const playNext = useCallback((isAuto?: any) => {
                 else if (event.data === YT.PlayerState.ENDED) playNext(true);
               },
             onError: (error: any) => {
-                console.warn("🚫 YT Bloqueado por Copyright/Embed. Saltando pista...", error.data);
-                playNext(true); // Auto-salto evasivo instantáneo
+              console.warn("🚫 YT Iframe Event Error:", error.data);
+              setIsAudioLoading(false);
             }
           }
         });

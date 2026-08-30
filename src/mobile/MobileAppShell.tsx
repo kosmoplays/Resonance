@@ -69,7 +69,7 @@ export function MobileAppShell({
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-black text-white overflow-hidden relative font-sans">
+    <div className="fixed inset-0 w-full h-full flex flex-col bg-black text-white overflow-hidden font-sans select-none">
       {/* TOAST ALERTS */}
       <MobileToast toast={toast} />
 

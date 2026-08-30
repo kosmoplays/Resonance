@@ -29,7 +29,7 @@ interface MobileTrackListViewProps {
     isSearching?: boolean;
   };
   audioProps: {
-    playTrack: (track: any) => void;
+    playTrack: (track: any, customContext?: any[]) => void;
     togglePlay: () => void;
   };
   onOpenContext: (track: any) => void;
@@ -97,11 +97,11 @@ export function MobileTrackListView({
     if (shuffle) {
       usePlayerStore.setState({ isShuffle: true });
       const randIndex = Math.floor(Math.random() * viewTracks.length);
-      playTrack(viewTracks[randIndex]);
+      playTrack(viewTracks[randIndex], viewTracks);
     } else if (isCurrentTrackInView) {
       togglePlay();
     } else {
-      playTrack(viewTracks[0]);
+      playTrack(viewTracks[0], viewTracks);
     }
   };
 
@@ -417,7 +417,7 @@ export function MobileTrackListView({
                 track={track}
                 index={idx}
                 showIndex={true}
-                onPlay={playTrack}
+                onPlay={(t) => playTrack(t, filteredTracks)}
                 onOpenContext={onOpenContext}
               />
             ))}

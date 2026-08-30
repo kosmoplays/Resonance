@@ -11,6 +11,7 @@ import {
   Check,
   PlaySquare,
   Trash2,
+  Ban,
 } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 
@@ -52,7 +53,8 @@ export function MobileContextMenu({
     addTrackToPlaylist,
     openArtistProfile,
   } = scProps;
-  const { queue } = usePlayerStore();
+  const { queue, autoplayBlacklist } = usePlayerStore();
+  const isAutoplayExcluded = Boolean(track?.id && autoplayBlacklist && autoplayBlacklist.includes(String(track.id)));
 
   const [mounted, setMounted] = useState(false);
   const [showPlaylists, setShowPlaylists] = useState(false);
@@ -342,17 +344,54 @@ export function MobileContextMenu({
                 </button>
               )}
 
-              {/* ELIMINAR DE RESONANCE (MANDAR A LÁZARO Y NUNCA VOLVER A REPRODUCIR) */}
+              {/* EXCLUIR / INCLUIR EN AUTOPLAY */}
+              <button
+                onClick={() => {
+                  usePlayerStore.getState().toggleAutoplayBlacklist(String(track.id));
+                  window.dispatchEvent(
+                    new CustomEvent('show-toast', {
+                      detail: {
+                        msg: isAutoplayExcluded
+                          ? 'Canción re-incluida en Autoplay'
+                          : 'Canción excluida de Autoplay (se oscurece)',
+                        type: 'info',
+                      },
+                    })
+                  );
+                  close();
+                }}
+                className="w-full flex items-center gap-3.5 p-3.5 bg-white/5 active:bg-white/10 rounded-2xl transition-colors text-left"
+              >
+                <Ban size={20} className={isAutoplayExcluded ? 'text-amber-400' : 'text-neutral-400'} />
+                <div className="min-w-0">
+                  <span className="font-semibold text-sm text-white block leading-tight">
+                    {isAutoplayExcluded ? 'Re-incluir en Autoplay' : 'Excluir de Autoplay'}
+                  </span>
+                  <span className="text-[10px] text-neutral-400 block mt-0.5">
+                    {isAutoplayExcluded
+                      ? 'La reproducción automática podrá elegirla de nuevo'
+                      : 'Permanece visible pero oscurecida; no sonará en automático'}
+                  </span>
+                </div>
+              </button>
+
+              {/* ELIMINAR DE RESONANCE (MANDAR A LÁZARO Y NUNCA VOLVER A MOSTRAR NI REPRODUCIR) */}
               <button
                 onClick={() => {
                   if (scProps.hideFromResonance) {
                     scProps.hideFromResonance(track);
-                  } else {
-                    usePlayerStore.getState().toggleAutoplayBlacklist(String(track.id));
                   }
                   if (usePlayerStore.getState().currentTrack?.id === track.id) {
                     if (audioProps.playNext) audioProps.playNext();
                   }
+                  window.dispatchEvent(
+                    new CustomEvent('show-toast', {
+                      detail: {
+                        msg: 'Canción eliminada de Resonance y enviada al Motor Lázaro',
+                        type: 'success',
+                      },
+                    })
+                  );
                   close();
                 }}
                 className="w-full flex items-center gap-3.5 p-3.5 bg-red-500/10 active:bg-red-500/20 border border-red-500/20 rounded-2xl transition-colors text-left"
@@ -363,7 +402,7 @@ export function MobileContextMenu({
                     Eliminar de Resonance
                   </span>
                   <span className="text-[10px] text-red-300/70 block mt-0.5">
-                    Mandar a Lázaros y no volver a reproducir
+                    Ocultar totalmente de la app y mandar al Motor Lázaro
                   </span>
                 </div>
               </button>
