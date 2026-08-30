@@ -42,7 +42,7 @@ jobs:
         run: |
           mkdir -p .github/bin
           echo '#!/bin/bash' > .github/bin/xcodebuild
-          echo 'exec /usr/bin/xcodebuild "$@" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGNING_IDENTITY=""' >> .github/bin/xcodebuild
+          echo 'exec /usr/bin/xcodebuild "$@" OTHER_LDFLAGS="${inherited} -framework AVFoundation" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGNING_IDENTITY=""' >> .github/bin/xcodebuild
           chmod +x .github/bin/xcodebuild
           echo "$(pwd)/.github/bin" >> $GITHUB_PATH
 
