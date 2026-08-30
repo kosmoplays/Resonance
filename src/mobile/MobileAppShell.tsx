@@ -180,12 +180,16 @@ export function MobileAppShell({
         onCreate={handleCreatePlaylist}
       />
 
-      {/* MOUNT INVISIBLE AUDIO & IFRAME NODES FOR AUDIO ENGINE */}
-      <audio ref={audioProps.audioRef} className="hidden" />
+      {/* MOUNT INVISIBLE AUDIO & IFRAME NODES FOR AUDIO ENGINE (PLAYS IN BACKGROUND ON IOS) */}
+      <audio
+        ref={audioProps.audioRef}
+        playsInline
+        style={{ position: 'fixed', top: -9999, left: -9999, width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
+      />
       <iframe
         ref={audioProps.iframeRef}
-        className="hidden"
         allow="autoplay; encrypted-media"
+        style={{ position: 'fixed', top: -9999, left: -9999, width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
         src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/2126409108&auto_play=false"
       />
     </div>

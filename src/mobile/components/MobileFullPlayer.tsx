@@ -361,7 +361,12 @@ export function MobileFullPlayer({
 
               {/* PROGRESS BAR & TIMESTAMPS */}
               <div className="mt-4 flex-shrink-0">
-                <div className="relative group flex items-center h-8 cursor-pointer touch-manipulation">
+                <div
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onTouchMove={(e) => e.stopPropagation()}
+                  onTouchEnd={(e) => e.stopPropagation()}
+                  className="relative group flex items-center h-8 cursor-pointer touch-manipulation"
+                >
                   <div className="absolute w-full h-2 bg-white/20 rounded-full pointer-events-none overflow-hidden shadow-inner">
                     <div
                       className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-400 rounded-full transition-all duration-150 shadow-[0_0_12px_rgba(59,130,246,0.8)]"
@@ -398,8 +403,15 @@ export function MobileFullPlayer({
                     max={duration || 100}
                     value={progress || 0}
                     onChange={(e) => setProgress(Number(e.target.value))}
-                    onTouchStart={() => setIsSeeking(true)}
+                    onTouchStart={(e) => {
+                      e.stopPropagation();
+                      setIsSeeking(true);
+                    }}
+                    onTouchMove={(e) => {
+                      e.stopPropagation();
+                    }}
                     onTouchEnd={(e) => {
+                      e.stopPropagation();
                       setIsSeeking(false);
                       handleSeek(Number(e.currentTarget.value));
                     }}

@@ -22,7 +22,7 @@ export function MobileBottomNav({
   ];
 
   return (
-    <nav className="w-full bg-neutral-950/95 backdrop-blur-2xl border-t border-white/10 px-2 py-1 flex items-center justify-around z-30 transition-colors">
+    <nav className="w-full bg-neutral-950/70 backdrop-blur-3xl border-t border-white/10 shadow-[0_-10px_30px_rgba(0,0,0,0.6)] px-3 py-1 flex items-center justify-around z-30 transition-all">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
@@ -35,14 +35,14 @@ export function MobileBottomNav({
               setActiveTab(tab.id);
               if (onTabPress) onTabPress(tab.id);
             }}
-            className={`flex flex-col items-center justify-center py-0.5 px-2.5 rounded-xl transition-all duration-200 active:scale-90 touch-manipulation relative ${
-              isActive ? 'text-white' : 'text-neutral-500 hover:text-neutral-300'
+            className={`flex flex-col items-center justify-center py-1 px-3.5 rounded-2xl transition-all duration-200 active:scale-90 touch-manipulation relative ${
+              isActive ? 'text-white bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)]' : 'text-neutral-400 hover:text-white'
             }`}
           >
             <Icon
-              size={20}
+              size={19}
               className={`transition-transform duration-200 ${
-                isActive ? 'scale-105 drop-shadow-[0_0_10px_rgba(255,255,255,0.6)] text-white' : ''
+                isActive ? 'scale-110 drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] text-white' : ''
               }`}
               strokeWidth={isActive ? 2.4 : 1.8}
             />

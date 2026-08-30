@@ -266,8 +266,16 @@ const playNext = useCallback((isAuto?: any) => {
           return;
         }
 
-        // --- LÓGICA DE REPRODUCCIÓN ESTÁNDAR ---
-    if (!activeList || activeList.length === 0) return;
+    // --- LÓGICA DE REPRODUCCIÓN ESTÁNDAR ---
+    if (!activeList || activeList.length === 0) {
+      const isAutoplay = usePlayerStore.getState().isAutoplayEnabled;
+      if (isAutoplay && currentTrack) {
+        triggerSmartAutoplay(currentTrack);
+      } else {
+        setIsPlaying(false);
+      }
+      return;
+    }
 
     const { autoplayBlacklist } = stateRefs.current;
     let nextIndex = 0;
@@ -286,11 +294,14 @@ const playNext = useCallback((isAuto?: any) => {
 
       while (attempts < activeList.length) {
         if (nextIndex >= activeList.length) {
-          if (loopMode === 1) nextIndex = 0;
-          else {
+          if (loopMode === 1) {
+            nextIndex = 0;
+            foundValid = true;
+            break;
+          } else {
             // Fin de la lista o canción única
             const isAutoplay = usePlayerStore.getState().isAutoplayEnabled;
-            if (isAutoplay && isAutomatic && currentTrack) {
+            if (isAutoplay && currentTrack) {
               triggerSmartAutoplay(currentTrack);
               return;
             } else {
@@ -305,11 +316,12 @@ const playNext = useCallback((isAuto?: any) => {
       }
     }
 
-    // Si encontramos una canción no bloqueada, la reproducimos. Si no, detenemos.
-    if (foundValid) playTrack(activeList[nextIndex]);
-    else {
+    // Si encontramos una canción no bloqueada, la reproducimos. Si no, activamos autoplay.
+    if (foundValid && activeList[nextIndex]) {
+      playTrack(activeList[nextIndex]);
+    } else {
       const isAutoplay = usePlayerStore.getState().isAutoplayEnabled;
-      if (isAutoplay && isAutomatic && currentTrack) {
+      if (isAutoplay && currentTrack) {
         triggerSmartAutoplay(currentTrack);
       } else {
         setIsPlaying(false);
@@ -559,8 +571,8 @@ const playNext = useCallback((isAuto?: any) => {
     const audio = audioRef.current;
     audio.crossOrigin = "anonymous";
 
-    // 1. Inicialización de la física de ondas (Web Audio API) y Estabilizador de Volumen
-    if (!audioContextRef.current) {
+    // 1. Inicialización de la física de ondas (Web Audio API) y Estabilizador de Volumen (solo en desktop para no suspender audio en iOS)
+    if (!isMobile && !audioContextRef.current) {
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       audioContextRef.current = new AudioContext();
       analyserRef.current = audioContextRef.current.createAnalyser();
@@ -582,7 +594,7 @@ const playNext = useCallback((isAuto?: any) => {
     }
 
     // Asegurar que el contexto no esté suspendido por políticas del navegador
-    if (audioContextRef.current.state === 'suspended') {
+    if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
       audioContextRef.current.resume();
     }
 
