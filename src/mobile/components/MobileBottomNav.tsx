@@ -22,7 +22,7 @@ export function MobileBottomNav({
   ];
 
   return (
-    <nav className="w-full bg-neutral-950/80 backdrop-blur-3xl border-t border-white/10 shadow-[0_-8px_25px_rgba(0,0,0,0.6)] px-2 py-0.5 flex items-center justify-around z-30 transition-all">
+    <nav className="w-full bg-neutral-950/85 backdrop-blur-3xl border-t border-white/10 shadow-[0_-10px_30px_rgba(0,0,0,0.6)] px-3 pt-1.5 pb-[max(env(safe-area-inset-bottom,0px),8px)] flex items-center justify-around z-30 transition-all">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
@@ -35,19 +35,19 @@ export function MobileBottomNav({
               setActiveTab(tab.id);
               if (onTabPress) onTabPress(tab.id);
             }}
-            className={`flex flex-col items-center justify-center py-0.5 px-3 rounded-xl transition-all duration-200 active:scale-90 touch-manipulation relative ${
+            className={`flex flex-col items-center justify-center py-1 px-3.5 rounded-2xl transition-all duration-200 active:scale-90 touch-manipulation relative ${
               isActive ? 'text-white bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)]' : 'text-neutral-400 hover:text-white'
             }`}
           >
             <Icon
-              size={17}
+              size={22}
               className={`transition-transform duration-200 ${
-                isActive ? 'scale-105 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] text-white' : ''
+                isActive ? 'scale-110 drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] text-white' : ''
               }`}
               strokeWidth={isActive ? 2.4 : 1.8}
             />
             <span
-              className={`text-[8.5px] tracking-tight mt-0.5 transition-all ${
+              className={`text-[10px] tracking-tight mt-0.5 transition-all ${
                 isActive ? 'font-bold text-white' : 'font-medium text-neutral-400'
               }`}
             >

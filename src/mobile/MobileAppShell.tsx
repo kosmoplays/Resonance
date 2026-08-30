@@ -86,7 +86,7 @@ export function MobileAppShell({
       )}
 
       {/* MAIN VIEWPORT */}
-      <main className="flex-1 overflow-hidden z-10 relative">
+      <main className="flex-1 min-h-0 overflow-hidden z-10 relative">
         {isDrilldown ? (
           <MobileTrackListView
             scProps={scProps}

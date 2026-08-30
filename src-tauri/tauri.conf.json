@@ -11,7 +11,7 @@
   "app": {
     "windows": [],
     "security": {
-      "csp": "default-src 'self' tauri: http://localhost:1420; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://w.soundcloud.com https://www.youtube.com https://s.ytimg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' tauri: http://localhost:1420 ws://localhost:1421 https://ebcobonneuhtmaedkxdq.supabase.co https://*.soundcloud.com https://*.sndcdn.com https://*.youtube.com https://*.googlevideo.com https://*.googleapis.com https://pipedapi.kavin.rocks https://pipedapi.smnz.de https://pipedapi.tokhmi.xyz https://api.piped.projectsegfau.lt https://vid.puffyan.us https://invidious.flokinet.to https://invidious.lunar.icu https://yewtu.be https://lrclib.net https://accounts.google.com; frame-src https://w.soundcloud.com https://www.youtube.com https://accounts.google.com;",
+      "csp": "default-src 'self' tauri: http://localhost:1420; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://w.soundcloud.com https://www.youtube.com https://s.ytimg.com https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; media-src 'self' blob: https: http: data:; connect-src 'self' tauri: http: https: ws: wss: data: blob:; frame-src https://w.soundcloud.com https://www.youtube.com https://accounts.google.com;",
       "capabilities": [
         {
           "identifier": "resonance-network-override",
