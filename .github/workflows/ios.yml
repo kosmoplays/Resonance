@@ -31,6 +31,9 @@ jobs:
         run: |
           export HOMEBREW_NO_REQUIRE_TAP_TRUST=1
           npx tauri ios init
+          
+      - name: Patch iOS Native Code (Background Audio & Safe Area)
+        run: python scripts/patch_ios.py
 
       - name: Crear Interceptor xcodebuild para firmar nulo
         run: |

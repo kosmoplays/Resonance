@@ -12,6 +12,7 @@ import { MobileSearchView } from './views/MobileSearchView';
 import { MobileLibraryView } from './views/MobileLibraryView';
 import { MobileProfileView } from './views/MobileProfileView';
 import { MobileTrackListView } from './views/MobileTrackListView';
+import { MobileDiagnosticsHUD } from './components/MobileDiagnosticsHUD';
 
 interface MobileAppShellProps {
   audioProps: any;
@@ -69,7 +70,8 @@ export function MobileAppShell({
   };
 
   return (
-    <div className="flex-1 w-full h-[100dvh] flex flex-col bg-black text-white overflow-hidden font-sans select-none relative">
+    <div className="flex-1 w-full h-[100dvh] flex flex-col bg-black text-white overflow-hidden font-sans select-none relative border-[4px] border-yellow-500 box-border">
+      <MobileDiagnosticsHUD />
       {/* TOAST ALERTS */}
       <MobileToast toast={toast} />
 

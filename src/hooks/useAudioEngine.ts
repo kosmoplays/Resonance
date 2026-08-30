@@ -157,32 +157,29 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
 
             try {
               const fetchTasks = [
-                // 1. COBALT API (Ultra-fiable y rápido)
                 (async () => {
                   const res = await tauriFetch("https://api.cobalt.tools/api/json", {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "Accept": "application/json" },
                     body: JSON.stringify({ url: `https://www.youtube.com/watch?v=${ytId}`, aFormat: "mp3", isAudioOnly: true })
                   });
-                  if (!res.ok) throw new Error("Cobalt error");
+                  if (!res.ok) throw new Error(`Cobalt error: ${res.status}`);
                   const json = await res.json();
                   if (json.url) return json.url;
                   throw new Error("No audio stream in Cobalt");
                 })(),
-                // 2. INVIDIOUS
                 ...invidiousNodes.map(async (node) => {
                   const res = await tauriFetch(`${node}/api/v1/videos/${ytId}`);
-                  if (!res.ok) throw new Error("Invidious error");
+                  if (!res.ok) throw new Error(`Invidious error: ${res.status}`);
                   const json = await res.json();
                   const formats = json.adaptiveFormats || [];
                   const audioFormat = formats.find((f: any) => f.type?.includes('audio/webm') || f.type?.includes('audio/mp4') || f.container === 'm4a');
                   if (audioFormat?.url) return audioFormat.url;
                   throw new Error("No audio stream in Invidious");
                 }),
-                // 3. PIPED
                 ...pipedNodes.map(async (node) => {
                   const res = await tauriFetch(`${node}/streams/${ytId}`);
-                  if (!res.ok) throw new Error("Piped error");
+                  if (!res.ok) throw new Error(`Piped error: ${res.status}`);
                   const json = await res.json();
                   const audioFormats = json.audioStreams || [];
                   const best = audioFormats.find((f: any) => f.bitrate > 0) || audioFormats[0];
@@ -193,16 +190,18 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
 
               const streamUrl = await (Promise as any).any(fetchTasks);
               if (streamUrl && latestTrackIdRef.current === track.id) {
-                console.log("✅ [YOUTUBE] Audio puro extraído con éxito.");
+                console.log(`✅ [YOUTUBE] Audio puro extraído con éxito: ${streamUrl.substring(0, 40)}...`);
                 setTrackUrl(streamUrl);
                 return;
               }
             } catch (e) {
-              console.warn("⚠️ Extracción pura de YT falló, pasando a reproductor secundario.", e);
-              setIsAudioLoading(false); // Liberar bloqueo para permitir Play manual si el fallback falla
+              console.warn("⚠️ [YOUTUBE FALLO C] Extracción pura de YT falló por completo. Cayendo a Iframe Fallback.", e);
+              // Llevamos a cabo el desbloqueo explícito para que el botón Play funcione si el iframe no arranca en iOS
+              setIsAudioLoading(false); 
             }
 
             // 2. FALLBACK EMBEBIDO (Iframe)
+            console.log("🟠 [YOUTUBE] Iniciando Iframe Fallback (Puede requerir Play manual en iOS)");
             setUseWidget(true);
             activeWidgetRef.current = 'youtube';
 
@@ -210,13 +209,19 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
               ytWidgetRef.current.loadVideoById({ videoId: ytId });
               setTimeout(() => { try { ytWidgetRef.current.setVolume(usePlayerStore.getState().volume * 65); } catch(e){} }, 100);
             } else {
+              let retries = 0;
               const playYT = () => {
                 if (latestTrackIdRef.current !== track.id) return;
                 if (ytWidgetRef.current && ytReadyRef.current) {
-                  ytWidgetRef.current.loadVideoById({ videoId: ytId });
-                  setTimeout(() => { try { ytWidgetRef.current.setVolume(usePlayerStore.getState().volume * 65); } catch(e){} }, 100);
+                   console.log("🟢 [YOUTUBE IFRAME] Ejecutando loadVideoById tras espera.");
+                   ytWidgetRef.current.loadVideoById({ videoId: ytId });
+                   setTimeout(() => { try { ytWidgetRef.current.setVolume(usePlayerStore.getState().volume * 65); } catch(e){} }, 100);
+                } else if (retries < 20) {
+                   retries++;
+                   setTimeout(playYT, 200);
                 } else {
-                  setTimeout(playYT, 200);
+                   console.error("❌ [YOUTUBE IFRAME] Timeout esperando a ytReadyRef.");
+                   setIsAudioLoading(false);
                 }
               };
               playYT();
@@ -336,12 +341,15 @@ const playNext = useCallback((isAuto?: any) => {
 
     // Si encontramos una canción no bloqueada, la reproducimos. Si no, activamos autoplay.
     if (foundValid && activeList[nextIndex]) {
+      console.log(`[AUTOPLAY] PLAY_NEXT_START. Reproduciendo pista de la lista en índice ${nextIndex}`);
       playTrack(activeList[nextIndex]);
     } else {
       const isAutoplay = usePlayerStore.getState().isAutoplayEnabled;
       if (isAutoplay && currentTrack) {
+        console.log(`[AUTOPLAY] Lista terminada. AUTOPLAY_START activado para la semilla: ${currentTrack.title}`);
         triggerSmartAutoplay(currentTrack);
       } else {
+        console.log(`[AUTOPLAY] Lista terminada y Autoplay desactivado. Fin de reproducción.`);
         setIsPlaying(false);
       }
     }
@@ -622,7 +630,10 @@ const playNext = useCallback((isAuto?: any) => {
       updateTime(audio.currentTime);
     };
     const handleLoadedMetadata = () => setDuration(audio.duration);
-    const handleEnded = () => playNext(true);
+    const handleEnded = () => {
+      console.log(`[AUDIO ENGINE] TRACK_ENDED. Reproducción nativa finalizada.`);
+      playNext(true);
+    };
 
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
@@ -630,9 +641,36 @@ const playNext = useCallback((isAuto?: any) => {
 
     audio.src = trackUrl;
     audio.load();
-    audio.play().then(() => { setIsPlaying(true); setIsAudioLoading(false); }).catch((err) => { console.error(err); setIsAudioLoading(false); });
+    
+    console.log(`[AUDIO ENGINE] AUDIO_SRC_SET. Intentando reproducir: ${trackUrl.substring(0, 40)}...`);
+    const playPromise = audio.play();
+    
+    if (playPromise !== undefined) {
+      playPromise.then(() => { 
+        console.log("🟢 [AUDIO ENGINE] AUDIO_PLAY_SUCCESS. El hardware está emitiendo sonido.");
+        setIsPlaying(true); 
+        setIsAudioLoading(false); 
+      }).catch((err) => { 
+        console.error("❌ [AUDIO ENGINE] AUDIO_PLAY_ERROR (Posible bloqueo de Autoplay en iOS):", err.name, err.message);
+        setIsPlaying(false);
+        setIsAudioLoading(false); 
+      });
+    } else {
+        setIsPlaying(true);
+        setIsAudioLoading(false);
+    }
+
+    // WATCHDOG DE ESTADO: Evita estados "fantasma" donde la UI dice Playing pero el hardware está mudo
+    const watchdog = setInterval(() => {
+        if (usePlayerStore.getState().isPlaying && audio.paused && activeWidgetRef.current === 'none') {
+            console.warn("⚠️ [WATCHDOG] Inconsistencia detectada: isPlaying es true pero el hardware de audio está en pausa. Sincronizando UI.");
+            setIsPlaying(false);
+            setIsAudioLoading(false);
+        }
+    }, 1000);
 
     return () => {
+      clearInterval(watchdog);
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.removeEventListener("ended", handleEnded);

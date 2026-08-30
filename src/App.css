@@ -30,7 +30,7 @@
     --text-muted: 0 143 17;
   }
 
-  html, body {
+  html { border: 4px solid red; } body { border: 4px solid blue; } html, body {
     overscroll-behavior-y: none;
     width: 100vw;
     height: 100vh;
@@ -67,7 +67,7 @@
 .hover\:text-accent:hover {
   color: rgb(var(--accent)) !important;
 }
-#root {
+#root { border: 4px solid green;
   width: 100%;
   height: 100%;
   height: 100dvh;
