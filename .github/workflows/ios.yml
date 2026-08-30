@@ -33,7 +33,10 @@ jobs:
           npx tauri ios init
           
       - name: Patch iOS Native Code (Background Audio & Safe Area)
-        run: python scripts/patch_ios.py
+        run: |
+          python scripts/patch_ios.py
+          cd src-tauri/gen/apple
+          xcodegen
 
       - name: Crear Interceptor xcodebuild para firmar nulo
         run: |
