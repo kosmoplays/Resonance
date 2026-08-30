@@ -22,12 +22,7 @@ export function MobileBottomNav({
   ];
 
   return (
-    <nav
-      style={{
-        paddingBottom: 'max(calc(env(safe-area-inset-bottom, 0px) - 16px), 6px)',
-      }}
-      className="w-full bg-neutral-950/95 backdrop-blur-2xl border-t border-white/10 px-2 pt-1 flex items-center justify-around z-30 transition-colors"
-    >
+    <nav className="w-full bg-neutral-950/95 backdrop-blur-2xl border-t border-white/10 px-2 py-1 flex items-center justify-around z-30 transition-colors">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;

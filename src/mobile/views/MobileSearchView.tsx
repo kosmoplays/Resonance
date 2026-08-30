@@ -73,13 +73,13 @@ export function MobileSearchView({
     <div
       style={{
         paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)',
-        maskImage: 'linear-gradient(to bottom, transparent 0px, black 40px, black 100%)',
-        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 40px, black 100%)',
+        maskImage: 'linear-gradient(to bottom, transparent 0px, transparent 15px, black max(env(safe-area-inset-top, 0px), 44px), black 100%)',
+        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, transparent 15px, black max(env(safe-area-inset-top, 0px), 44px), black 100%)',
       }}
-      className="h-full w-full overflow-y-auto pb-6 px-4 space-y-4 select-none scrollbar-none"
+      className="h-full w-full overflow-y-auto pb-4 px-4 space-y-4 select-none scrollbar-none"
     >
-      {/* HEADER */}
-      <header className="sticky top-0 z-30 -mx-4 px-4 py-2 bg-neutral-950/90 backdrop-blur-2xl border-b border-white/5">
+      {/* HEADER (SCROLLS WITH PAGE) */}
+      <header>
         <span className="text-[10px] font-bold tracking-widest text-accent uppercase">
           Multiverso SC + YT
         </span>
