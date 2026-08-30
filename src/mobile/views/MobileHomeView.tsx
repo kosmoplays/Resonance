@@ -294,6 +294,8 @@ export function MobileHomeView({
     <div
       style={{
         paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)',
+        maskImage: 'linear-gradient(to bottom, transparent 0px, black 40px, black 100%)',
+        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 40px, black 100%)',
       }}
       className="h-full w-full overflow-y-auto pb-6 px-4 space-y-6 select-none scrollbar-none"
     >

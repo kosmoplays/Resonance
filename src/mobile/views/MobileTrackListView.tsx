@@ -163,7 +163,13 @@ export function MobileTrackListView({
       )}
 
       {/* SCROLLABLE CONTENT */}
-      <div className="flex-1 overflow-y-auto pb-6 px-3 scrollbar-none">
+      <div
+        style={{
+          maskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, black 24px, black 100%)',
+        }}
+        className="flex-1 overflow-y-auto pb-6 px-3 scrollbar-none"
+      >
         {/* ARTIST PROFILE HERO BANNER */}
         {isArtistProfile && (
           <div className="relative w-full rounded-3xl overflow-hidden shadow-2xl bg-neutral-900 my-3 border border-white/10">
