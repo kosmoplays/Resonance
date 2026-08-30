@@ -161,7 +161,8 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
                   const res = await tauriFetch("https://api.cobalt.tools/api/json", {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "Accept": "application/json" },
-                    body: JSON.stringify({ url: `https://www.youtube.com/watch?v=${ytId}`, aFormat: "mp3", isAudioOnly: true })
+                    // CAMBIO: Forzamos m4a para iOS
+                    body: JSON.stringify({ url: `https://www.youtube.com/watch?v=${ytId}`, aFormat: "m4a", isAudioOnly: true })
                   });
                   if (!res.ok) throw new Error(`Cobalt error: ${res.status}`);
                   const json = await res.json();
@@ -173,7 +174,8 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
                   if (!res.ok) throw new Error(`Invidious error: ${res.status}`);
                   const json = await res.json();
                   const formats = json.adaptiveFormats || [];
-                  const audioFormat = formats.find((f: any) => f.type?.includes('audio/webm') || f.type?.includes('audio/mp4') || f.container === 'm4a');
+                  // CAMBIO: Excluimos webm, solo permitimos mp4 o m4a
+                  const audioFormat = formats.find((f: any) => f.type?.includes('audio/mp4') || f.container === 'm4a');
                   if (audioFormat?.url) return audioFormat.url;
                   throw new Error("No audio stream in Invidious");
                 }),
@@ -182,7 +184,9 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
                   if (!res.ok) throw new Error(`Piped error: ${res.status}`);
                   const json = await res.json();
                   const audioFormats = json.audioStreams || [];
-                  const best = audioFormats.find((f: any) => f.bitrate > 0) || audioFormats[0];
+                  // CAMBIO: Filtramos los formatos para coger solo m4a o aac (compatibles con iOS)
+                  const compatible = audioFormats.filter((f: any) => f.codec === 'm4a' || f.codec === 'aac' || f.mimeType?.includes('mp4'));
+                  const best = (compatible.length > 0 ? compatible : audioFormats).sort((a: any, b: any) => b.bitrate - a.bitrate)[0];
                   if (best?.url) return best.url;
                   throw new Error("No audio stream in Piped");
                 })

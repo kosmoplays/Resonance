@@ -24,8 +24,7 @@ export function MobileBottomNav({
   return (
     <nav 
       id="mobile-bottom-nav"
-      className="w-full bg-neutral-950/85 backdrop-blur-3xl border-t border-white/10 shadow-[0_-10px_30px_rgba(0,0,0,0.6)] px-3 pt-1.5 flex items-center justify-around z-30 transition-all"
-      style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)' }}
+      className="w-full bg-neutral-950/85 backdrop-blur-3xl border-t border-white/10 shadow-[0_-10px_30px_rgba(0,0,0,0.6)] px-3 pt-1.5 pb-5 flex items-center justify-around z-30 transition-all"
     >
       {tabs.map((tab) => {
         const Icon = tab.icon;
