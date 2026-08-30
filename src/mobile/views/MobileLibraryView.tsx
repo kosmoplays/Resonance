@@ -62,9 +62,9 @@ export function MobileLibraryView({
   );
 
   return (
-    <div className="h-full w-full overflow-y-auto pt-[max(env(safe-area-inset-top,0px),16px)] pb-36 px-4 space-y-5 select-none">
+    <div className="h-full w-full overflow-y-auto pt-[calc(env(safe-area-inset-top,0px)+24px)] pb-[calc(env(safe-area-inset-bottom,0px)+150px)] px-4 space-y-5 select-none scrollbar-none">
       {/* HEADER */}
-      <header className="flex items-center justify-between pt-2">
+      <header className="flex items-center justify-between">
         <div>
           <span className="text-[10px] font-bold tracking-widest text-accent uppercase">
             Colección Unificada
@@ -277,15 +277,61 @@ export function MobileLibraryView({
       )}
 
       {/* SECTION 3: ARTISTS (If all or artists) */}
-      {(activeFilter === 'all' || activeFilter === 'artists') && (
+      {(activeFilter === 'all' || activeFilter === 'artists') && follows && follows.length > 0 && (
         <section className="space-y-3">
-          <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
-            Artistas Seguidos ({follows?.length || 0})
-          </h3>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <User size={16} className="text-accent" />
+              <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                Artistas Seguidos ({follows.length})
+              </h3>
+            </div>
+            {activeFilter === 'all' && (
+              <button
+                type="button"
+                onClick={() => openView('Artistas Seguidos', follows)}
+                className="text-xs font-bold text-accent active:opacity-70"
+              >
+                Ver todos
+              </button>
+            )}
+          </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            {follows && follows.length > 0 ? (
-              follows.map((artist: any) => {
+          {activeFilter === 'all' ? (
+            /* COMPRESSED HORIZONTAL CAROUSEL FOR ALL TAB */
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none">
+              {follows.map((artist: any) => {
+                const avatar = artist.avatar_url
+                  ? artist.avatar_url.replace('-large', '-t300x300')
+                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      artist.username || 'Artist'
+                    )}&background=3b82f6&color=fff&size=128`;
+
+                return (
+                  <div
+                    key={artist.id}
+                    onClick={() => openArtistProfile(artist)}
+                    className="flex flex-col items-center flex-shrink-0 w-16 group cursor-pointer active:scale-95 transition-transform"
+                  >
+                    <div className="w-14 h-14 rounded-full overflow-hidden border border-white/10 bg-neutral-900 shadow-md">
+                      <img
+                        src={avatar}
+                        alt={artist.username}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                    <span className="text-[11px] font-semibold text-white truncate w-full text-center mt-1">
+                      {artist.username}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            /* 2-COLUMN GRID FOR ARTISTS FILTER TAB */
+            <div className="grid grid-cols-2 gap-3">
+              {follows.map((artist: any) => {
                 const avatar = artist.avatar_url
                   ? artist.avatar_url.replace('-large', '-t300x300')
                   : `https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -302,6 +348,7 @@ export function MobileLibraryView({
                       src={avatar}
                       alt={artist.username}
                       className="w-12 h-12 rounded-full object-cover border border-white/10"
+                      loading="lazy"
                     />
                     <div className="min-w-0">
                       <h4 className="font-bold text-xs text-white truncate">{artist.username}</h4>
@@ -309,13 +356,9 @@ export function MobileLibraryView({
                     </div>
                   </div>
                 );
-              })
-            ) : (
-              <p className="col-span-2 text-center py-6 text-neutral-500 text-xs">
-                No sigues a ningún artista todavía
-              </p>
-            )}
-          </div>
+              })}
+            </div>
+          )}
         </section>
       )}
 

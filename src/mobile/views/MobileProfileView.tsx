@@ -28,6 +28,8 @@ export function MobileProfileView({ scProps }: MobileProfileViewProps) {
 
   const [scTokenInput, setScTokenInput] = useState('');
   const [showScModal, setShowScModal] = useState(false);
+  const [ytTokenInput, setYtTokenInput] = useState('');
+  const [showYtModal, setShowYtModal] = useState(false);
   const [showLazaroModal, setShowLazaroModal] = useState(false);
 
   const deletedHistory = scProps?.deletedHistory || {};
@@ -96,13 +98,37 @@ export function MobileProfileView({ scProps }: MobileProfileViewProps) {
     }
   };
 
+  const handleSaveYtToken = async () => {
+    if (ytTokenInput.trim() && user?.id) {
+      const token = ytTokenInput.trim();
+      localStorage.setItem('youtube_access_token', token);
+
+      try {
+        await supabase.from('linked_accounts').upsert({
+          user_id: user.id,
+          account_id: `youtube-${user.id}`,
+          provider: 'youtube',
+          account_name: 'YouTube Music Móvil',
+          access_token: token,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id, provider' as any });
+      } catch (e) {}
+
+      window.dispatchEvent(
+        new CustomEvent('show-toast', { detail: { msg: 'Cuenta de YouTube actualizada', type: 'success' } })
+      );
+      setShowYtModal(false);
+      setYtTokenInput('');
+    }
+  };
+
   const hasYtToken = Boolean(localStorage.getItem('youtube_access_token'));
   const hasScToken = Boolean(localStorage.getItem('soundcloud_oauth_token'));
 
   return (
-    <div className="h-full w-full overflow-y-auto pt-[max(env(safe-area-inset-top,0px),16px)] pb-36 px-4 space-y-6 select-none">
+    <div className="h-full w-full overflow-y-auto pt-[calc(env(safe-area-inset-top,0px)+24px)] pb-[calc(env(safe-area-inset-bottom,0px)+150px)] px-4 space-y-6 select-none scrollbar-none">
       {/* HEADER WITH LOGO */}
-      <header className="pt-2 flex items-center justify-between">
+      <header className="flex items-center justify-between">
         <div>
           <span className="text-[10px] font-bold tracking-widest text-accent uppercase">
             Cuenta y Ajustes
@@ -216,58 +242,6 @@ export function MobileProfileView({ scProps }: MobileProfileViewProps) {
         </div>
       )}
 
-      {/* ARTISTAS SEGUIDOS COMPRIMIDOS (CON BOTÓN VER TODOS) */}
-      {scProps?.follows && scProps.follows.length > 0 && (
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <User size={16} className="text-accent" />
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                Artistas Seguidos ({scProps.follows.length})
-              </h3>
-            </div>
-            {scProps.openView && (
-              <button
-                type="button"
-                onClick={() => scProps.openView('Artistas Seguidos', scProps.follows)}
-                className="text-xs font-bold text-accent active:opacity-70"
-              >
-                Ver todos
-              </button>
-            )}
-          </div>
-
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none">
-            {scProps.follows.slice(0, 10).map((artist: any) => {
-              const avatar = artist.avatar_url
-                ? artist.avatar_url.replace('-large', '-t300x300')
-                : `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                    artist.username || 'Artist'
-                  )}&background=3b82f6&color=fff&size=128`;
-
-              return (
-                <div
-                  key={artist.id}
-                  onClick={() => scProps.openArtistProfile && scProps.openArtistProfile(artist)}
-                  className="flex flex-col items-center flex-shrink-0 w-16 group cursor-pointer active:scale-95 transition-transform"
-                >
-                  <div className="w-14 h-14 rounded-full overflow-hidden border border-white/10 bg-neutral-900 shadow-md">
-                    <img
-                      src={avatar}
-                      alt={artist.username}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <span className="text-[11px] font-semibold text-white truncate w-full text-center mt-1">
-                    {artist.username}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
       {/* MOTOR LÁZARO (BOTÓN ELEGANTE QUE ABRE PANEL DE RECUPERACIÓN) */}
       <section>
         <button
@@ -337,19 +311,16 @@ export function MobileProfileView({ scProps }: MobileProfileViewProps) {
               <div>
                 <h4 className="font-bold text-sm text-white">YouTube Music</h4>
                 <p className="text-xs text-neutral-400">
-                  {hasYtToken ? 'Cuenta Google conectada' : 'No conectada (búsqueda pública)'}
+                  {hasYtToken ? 'Cuenta conectada' : 'No conectada (búsqueda pública)'}
                 </p>
               </div>
             </div>
-            <span
-              className={`px-2.5 py-1 text-[10px] font-bold rounded-lg ${
-                hasYtToken
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                  : 'bg-neutral-800 text-neutral-400'
-              }`}
+            <button
+              onClick={() => setShowYtModal(true)}
+              className="px-3 py-1.5 bg-white/10 active:bg-white/20 text-xs font-semibold rounded-xl text-neutral-200"
             >
-              {hasYtToken ? 'Conectado' : 'Público'}
-            </span>
+              {hasYtToken ? 'Actualizar' : 'Configurar'}
+            </button>
           </div>
         </div>
       </section>
@@ -473,6 +444,39 @@ export function MobileProfileView({ scProps }: MobileProfileViewProps) {
               <button
                 onClick={handleSaveScToken}
                 className="flex-1 py-2.5 bg-accent text-white font-semibold text-xs rounded-xl"
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL TOKEN YOUTUBE */}
+      {showYtModal && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="bg-neutral-900 border border-white/10 rounded-3xl p-6 w-full max-w-sm space-y-4 animate-in zoom-in-95 duration-200">
+            <h3 className="text-base font-bold text-white">Vincular Cuenta de YouTube</h3>
+            <p className="text-xs text-neutral-400">
+              Pega tu token de acceso OAuth / Google de YouTube para sincronizar tus me gusta y playlists en el móvil. Se actualizará tu vinculación sin tocar la de PC.
+            </p>
+            <input
+              type="text"
+              placeholder="ya29.a0AfH6SM..."
+              value={ytTokenInput}
+              onChange={(e) => setYtTokenInput(e.target.value)}
+              className="w-full bg-black/50 border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-accent"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowYtModal(false)}
+                className="flex-1 py-2.5 bg-white/10 rounded-xl text-xs font-semibold text-neutral-300"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveYtToken}
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold text-xs rounded-xl"
               >
                 Guardar
               </button>
