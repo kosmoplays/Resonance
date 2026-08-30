@@ -6,6 +6,10 @@ use std::sync::Mutex;
 use tauri::{Manager, State};
 use tauri::{WebviewUrl, WebviewWindowBuilder};
 
+#[cfg(target_os = "ios")]
+#[link(name = "AVFoundation", kind = "framework")]
+extern "C" {}
+
 #[cfg(desktop)]
 struct DiscordState {
     client: Mutex<Option<DiscordIpcClient>>,
