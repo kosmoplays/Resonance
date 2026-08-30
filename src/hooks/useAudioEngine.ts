@@ -157,6 +157,19 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
 
             try {
               const fetchTasks = [
+                // 1. COBALT API (Ultra-fiable y rápido)
+                (async () => {
+                  const res = await tauriFetch("https://api.cobalt.tools/api/json", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                    body: JSON.stringify({ url: `https://www.youtube.com/watch?v=${ytId}`, aFormat: "mp3", isAudioOnly: true })
+                  });
+                  if (!res.ok) throw new Error("Cobalt error");
+                  const json = await res.json();
+                  if (json.url) return json.url;
+                  throw new Error("No audio stream in Cobalt");
+                })(),
+                // 2. INVIDIOUS
                 ...invidiousNodes.map(async (node) => {
                   const res = await tauriFetch(`${node}/api/v1/videos/${ytId}`);
                   if (!res.ok) throw new Error("Invidious error");
@@ -166,6 +179,7 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
                   if (audioFormat?.url) return audioFormat.url;
                   throw new Error("No audio stream in Invidious");
                 }),
+                // 3. PIPED
                 ...pipedNodes.map(async (node) => {
                   const res = await tauriFetch(`${node}/streams/${ytId}`);
                   if (!res.ok) throw new Error("Piped error");
@@ -185,6 +199,7 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
               }
             } catch (e) {
               console.warn("⚠️ Extracción pura de YT falló, pasando a reproductor secundario.", e);
+              setIsAudioLoading(false); // Liberar bloqueo para permitir Play manual si el fallback falla
             }
 
             // 2. FALLBACK EMBEBIDO (Iframe)

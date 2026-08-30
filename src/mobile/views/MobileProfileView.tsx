@@ -209,7 +209,7 @@ export function MobileProfileView({ scProps }: MobileProfileViewProps) {
 
       {/* EDIT PROFILE FORM MODAL */}
       {isEditing && (
-        <div className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div className="fixed top-0 left-0 w-full h-[100dvh] z-[160] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="bg-neutral-900 border border-white/10 rounded-3xl p-6 w-full max-w-sm space-y-4 animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between pb-2 border-b border-white/10">
               <h3 className="text-base font-bold text-white">Editar Perfil</h3>
@@ -367,7 +367,7 @@ export function MobileProfileView({ scProps }: MobileProfileViewProps) {
 
       {/* MODAL MOTOR LÁZARO */}
       {showLazaroModal && (
-        <div className="fixed inset-0 z-[150] flex flex-col justify-end p-0 bg-black/80 backdrop-blur-md">
+        <div className="fixed top-0 left-0 w-full h-[100dvh] z-[150] flex flex-col justify-end p-0 bg-black/80 backdrop-blur-md">
           <div className="bg-neutral-900 border-t border-white/10 rounded-t-3xl p-5 max-h-[80vh] flex flex-col animate-in slide-in-from-bottom duration-300">
             <div className="flex items-center justify-between pb-3 border-b border-white/10 flex-shrink-0">
               <div>
@@ -449,7 +449,7 @@ export function MobileProfileView({ scProps }: MobileProfileViewProps) {
 
       {/* MODAL TOKEN SC */}
       {showScModal && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div className="fixed top-0 left-0 w-full h-[100dvh] z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="bg-neutral-900 border border-white/10 rounded-3xl p-6 w-full max-w-sm space-y-4 animate-in zoom-in-95 duration-200">
             <h3 className="text-base font-bold text-white">Vincular Token de SoundCloud</h3>
             <p className="text-xs text-neutral-400">
@@ -482,7 +482,7 @@ export function MobileProfileView({ scProps }: MobileProfileViewProps) {
 
       {/* MODAL TOKEN YOUTUBE */}
       {showYtModal && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div className="fixed top-0 left-0 w-full h-[100dvh] z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="bg-neutral-900 border border-white/10 rounded-3xl p-6 w-full max-w-sm space-y-4 animate-in zoom-in-95 duration-200">
             <h3 className="text-base font-bold text-white">Vincular Cuenta de YouTube</h3>
             <p className="text-xs text-neutral-400">

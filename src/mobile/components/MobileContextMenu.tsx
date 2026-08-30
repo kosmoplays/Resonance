@@ -166,7 +166,7 @@ export function MobileContextMenu({
   };
 
   return (
-    <div className="fixed inset-0 z-[120] flex flex-col justify-end">
+    <div className="fixed top-0 left-0 w-full h-[100dvh] z-[120] flex flex-col justify-end">
       {/* BACKDROP */}
       <div
         className={`absolute inset-0 bg-black/75 backdrop-blur-md transition-opacity duration-300 ${

@@ -25,7 +25,7 @@ export function MobilePlaylistModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
+    <div className="fixed top-0 left-0 w-full h-[100dvh] z-[130] flex items-center justify-center p-4">
       {/* BACKDROP */}
       <div
         className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"

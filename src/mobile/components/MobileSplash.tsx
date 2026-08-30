@@ -18,7 +18,7 @@ export function MobileSplash() {
 
   return (
     <div
-      className={`fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black transition-opacity duration-300 pointer-events-none ${
+      className={`fixed top-0 left-0 w-full h-[100dvh] z-[200] flex flex-col items-center justify-center bg-black transition-opacity duration-300 pointer-events-none ${
         fading ? 'opacity-0' : 'opacity-100'
       }`}
     >

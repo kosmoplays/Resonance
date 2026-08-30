@@ -217,7 +217,7 @@ export function MobileFullPlayer({
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex flex-col bg-neutral-950 text-white select-none transition-all duration-300 ease-out ${
+      className={`fixed top-0 left-0 w-full h-[100dvh] z-[100] flex flex-col bg-neutral-950 text-white select-none transition-all duration-300 ease-out ${
         mounted ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
       }`}
       style={{
