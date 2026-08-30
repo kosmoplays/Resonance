@@ -28,49 +28,69 @@ def patch_info_plist():
             print("UIBackgroundModes ya existe en project.yml.")
 
 def patch_swift_code():
-    print("Buscando AppDelegate o App.swift para inyectar AVAudioSession...")
+    print("Buscando main.mm para inyectar configuración en Objective-C++...")
     gen_dir = os.path.join("src-tauri", "gen", "apple")
-    swift_files = []
+    mm_files = []
     
     for root, dirs, files in os.walk(gen_dir):
         for file in files:
-            if file.endswith(".swift"):
-                swift_files.append(os.path.join(root, file))
+            if file.endswith(".mm"):
+                mm_files.append(os.path.join(root, file))
 
-    if not swift_files:
-        print("Error: No se encontraron archivos Swift en", gen_dir)
-        print("Contenido del directorio:")
-        for root, dirs, files in os.walk(gen_dir):
-            for file in files:
-                print(os.path.join(root, file))
+    if not mm_files:
+        print("Error: No se encontraron archivos .mm en", gen_dir)
         sys.exit(1)
 
     injected = False
-    for path in swift_files:
+    for path in mm_files:
         with open(path, "r", encoding="utf-8") as f:
             content = f.read()
 
-        # Inyectar AVAudioSession
-        if "didFinishLaunchingWithOptions" in content and "AVAudioSession.sharedInstance().setCategory" not in content:
-            print(f"Inyectando AVAudioSession en {path}...")
+        if "int main" in content and "AVAudioSession" not in content:
+            print(f"Inyectando AVAudioSession y WKWebView fix en {path}...")
             
-            if "import AVFoundation" not in content:
-                content = "import AVFoundation\n" + content
-                
-            pattern = r'(func application\(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: \[UIApplication\.LaunchOptionsKey: Any\]\?\) -> Bool \{)'
-            replacement = r'\1\n        do {\n            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])\n            try AVAudioSession.sharedInstance().setActive(true)\n        } catch {\n            print("Failed to set audio session category. Error: \\(error)")\n        }\n'
+            headers = """
+#import <AVFoundation/AVFoundation.h>
+#import <WebKit/WebKit.h>
+#import <UIKit/UIKit.h>
+
+// Función para inyectar los fixes en el hilo principal con un ligero retraso
+// para permitir que el WKWebView de Wry se instancie.
+void applyTauriIOSFixes() {
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        // 1. AVAudioSession
+        NSError *error = nil;
+        [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback mode:AVAudioSessionModeDefault options:AVAudioSessionCategoryOptionMixWithOthers error:&error];
+        [[AVAudioSession sharedInstance] setActive:YES error:&error];
+        if (error) {
+            NSLog(@"Failed to set audio session category: %@", error);
+        }
+        
+        // 2. WKWebView Safe Area (Sin afectar global appearance)
+        UIWindow *window = [UIApplication sharedApplication].windows.firstObject;
+        if (window) {
+            void (^__block findWebView)(UIView *) = ^(UIView *view) {
+                if ([view isKindOfClass:[WKWebView class]]) {
+                    WKWebView *webView = (WKWebView *)view;
+                    if (@available(iOS 11.0, *)) {
+                        webView.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+                    }
+                }
+                for (UIView *subview in view.subviews) {
+                    findWebView(subview);
+                }
+            };
+            findWebView(window);
+        }
+    });
+}
+"""
+            # Insertar los headers arriba del main
+            content = headers + content
             
-            content = re.sub(pattern, replacement, content)
-            
-            with open(path, "w", encoding="utf-8") as f:
-                f.write(content)
-            injected = True
-            
-        # Inyectar parche local específico para el WKWebView sin tocar appearance()
-        if "didFinishLaunchingWithOptions" in content and "findWebView" not in content:
-            print(f"Inyectando WKWebView Safe Area override en {path}...")
-            pattern = r'(func application\(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: \[UIApplication\.LaunchOptionsKey: Any\]\?\) -> Bool \{)'
-            replacement = r'\1\n        // Override especifico para el WKWebView generado por Tauri (Wry)\n        DispatchQueue.main.async {\n            if let window = UIApplication.shared.windows.first {\n                func findWebView(in view: UIView) {\n                    if let webView = view as? AnyObject, String(describing: type(of: webView)).contains("WKWebView") {\n                        if #available(iOS 11.0, *) {\n                            if let scrollView = webView.value(forKey: "scrollView") as? UIScrollView {\n                                scrollView.contentInsetAdjustmentBehavior = .never\n                            }\n                        }\n                    }\n                    for subview in view.subviews {\n                        findWebView(in: subview)\n                    }\n                }\n                findWebView(in: window)\n            }\n        }\n'
+            # Inyectar la llamada a applyTauriIOSFixes() justo dentro de main
+            pattern = r'(int main\s*\([^)]*\)\s*\{)'
+            replacement = r'\1\n    applyTauriIOSFixes();\n'
             
             content = re.sub(pattern, replacement, content)
             
@@ -79,10 +99,11 @@ def patch_swift_code():
             injected = True
 
     if injected:
-        print("Código Swift parcheado correctamente.")
+        print("Código Objective-C parcheado correctamente.")
     else:
-        print("Atención: No se inyectaron parches (quizá ya estaban o no se encontró el método).")
+        print("Atención: No se inyectaron parches (quizá ya estaban o no se encontró el método main).")
 
 if __name__ == "__main__":
     patch_info_plist()
     patch_swift_code()
+
