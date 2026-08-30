@@ -62,7 +62,7 @@ export function MobileLibraryView({
   );
 
   return (
-    <div className="h-full w-full overflow-y-auto pt-[env(safe-area-inset-top,12px)] pb-[calc(env(safe-area-inset-bottom,0px)+80px)] px-4 space-y-5 select-none scrollbar-none">
+    <div className="h-full w-full overflow-y-auto pt-3 pb-24 px-4 space-y-5 select-none scrollbar-none">
       {/* HEADER */}
       <header className="flex items-center justify-between">
         <div>
