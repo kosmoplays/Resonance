@@ -290,7 +290,7 @@ export function MobileHomeView({
   const totalLikesCount = (likes?.length || 0) + (scLikes?.length || 0) + (ytLikes?.length || 0);
 
   return (
-    <div className="h-full w-full overflow-y-auto pt-3 pb-24 px-4 space-y-6 select-none scrollbar-none">
+    <div className="h-full w-full overflow-y-auto pt-[max(env(safe-area-inset-top,0px),44px)] pb-24 px-4 space-y-6 select-none scrollbar-none">
       {/* TOP HEADER WITH LOGO & AVATAR */}
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-3">

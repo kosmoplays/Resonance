@@ -235,7 +235,7 @@ export function MobileFullPlayer({
       </div>
 
       <div
-        className="relative z-10 flex flex-col h-full px-5 py-3"
+        className="relative z-10 flex flex-col h-full px-5 pt-[max(env(safe-area-inset-top,0px),44px)] pb-[max(env(safe-area-inset-bottom,0px),16px)]"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -361,12 +361,12 @@ export function MobileFullPlayer({
 
               {/* PROGRESS BAR & TIMESTAMPS */}
               <div className="mt-4 flex-shrink-0">
-                <div className="relative group flex items-center h-6 cursor-pointer touch-manipulation">
-                  <div className="absolute w-full h-1.5 bg-white/15 rounded-full pointer-events-none overflow-hidden">
+                <div className="relative group flex items-center h-8 cursor-pointer touch-manipulation">
+                  <div className="absolute w-full h-2 bg-white/20 rounded-full pointer-events-none overflow-hidden shadow-inner">
                     <div
-                      className="h-full bg-gradient-to-r from-blue-500 to-accent rounded-full transition-all duration-150"
+                      className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-400 rounded-full transition-all duration-150 shadow-[0_0_12px_rgba(59,130,246,0.8)]"
                       style={{
-                        width: `${duration > 0 ? (progress / duration) * 100 : 0}%`,
+                        width: `${duration > 0 ? Math.min(100, Math.max(0, (progress / duration) * 100)) : 0}%`,
                       }}
                     />
                     {/* RENDER ACTIVE CUTS ZONES IN SCRUBBER */}
@@ -377,12 +377,20 @@ export function MobileFullPlayer({
                         return (
                           <div
                             key={idx}
-                            className="absolute top-0 bottom-0 bg-neutral-600/80 border-x border-neutral-400/50"
+                            className="absolute top-0 bottom-0 bg-amber-400/80 border-x border-amber-300"
                             style={{ left: `${startPct}%`, width: `${widthPct}%` }}
                           />
                         );
                       })}
                   </div>
+
+                  {/* VIBRANT SCRUBBER THUMB */}
+                  <div
+                    className="absolute w-4 h-4 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.9)] pointer-events-none -ml-2 transition-all duration-150 border-2 border-blue-500"
+                    style={{
+                      left: `${duration > 0 ? Math.min(100, Math.max(0, (progress / duration) * 100)) : 0}%`,
+                    }}
+                  />
 
                   <input
                     type="range"

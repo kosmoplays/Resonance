@@ -116,7 +116,7 @@ export function MobileTrackListView({
   return (
     <div className="h-full w-full flex flex-col bg-neutral-950 text-white select-none relative overflow-hidden">
       {/* STICKY TOP HEADER */}
-      <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-2.5 bg-neutral-950/80 backdrop-blur-2xl border-b border-white/10 flex-shrink-0">
+      <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-2.5 pt-[max(env(safe-area-inset-top,0px),44px)] bg-neutral-950/80 backdrop-blur-2xl border-b border-white/10 flex-shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           <button
             type="button"
