@@ -21,9 +21,23 @@ def patch_info_plist():
     INFOPLIST_KEY_"""
             content = re.sub(r'(\s+)INFOPLIST_KEY_', replacement, content, count=1)
             
+            # También inyectamos OTHER_LDFLAGS para asegurarnos de que AVFoundation se linkea.
+            # En XcodeGen, podemos añadir OTHER_LDFLAGS bajo settings
+            if "OTHER_LDFLAGS" not in content:
+                print("Inyectando OTHER_LDFLAGS para AVFoundation...")
+                # Buscar el bloque de settings base e inyectarlo
+                if "settings:" in content:
+                    content = content.replace("settings:", "settings:\n  OTHER_LDFLAGS: ['-framework', 'AVFoundation']", 1)
+                else:
+                    # Si no hay settings globales, lo añadimos al final
+                    content += "\nsettings:\n  OTHER_LDFLAGS: ['-framework', 'AVFoundation']\n"
+            else:
+                # Si ya existe, añadir a la lista
+                content = re.sub(r'(OTHER_LDFLAGS:\s*\[)', r'\1\'-framework\', \'AVFoundation\', ', content)
+                
             with open(project_yml_path, "w", encoding="utf-8") as f:
                 f.write(content)
-            print("UIBackgroundModes añadido correctamente a project.yml.")
+            print("UIBackgroundModes y Linker Flags añadidos correctamente a project.yml.")
         else:
             print("UIBackgroundModes ya existe en project.yml.")
 
