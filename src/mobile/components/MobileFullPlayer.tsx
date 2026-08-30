@@ -235,7 +235,7 @@ export function MobileFullPlayer({
       </div>
 
       <div
-        className="relative z-10 flex flex-col h-full px-5 pt-[max(env(safe-area-inset-top,0px),44px)] pb-[max(env(safe-area-inset-bottom,0px),16px)]"
+        className="relative z-10 flex flex-col h-full px-5 pt-[max(env(safe-area-inset-top,0px),44px)] pb-3"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
