@@ -70,7 +70,7 @@ export function MobileSearchView({
     (viewPlaylists && viewPlaylists.length > 0);
 
   return (
-    <div className="h-full w-full overflow-y-auto pt-[calc(env(safe-area-inset-top,0px)+24px)] pb-[calc(env(safe-area-inset-bottom,0px)+150px)] px-4 space-y-4 select-none scrollbar-none">
+    <div className="h-full w-full overflow-y-auto pt-[env(safe-area-inset-top,12px)] pb-[calc(env(safe-area-inset-bottom,0px)+80px)] px-4 space-y-4 select-none scrollbar-none">
       {/* HEADER */}
       <header>
         <span className="text-[10px] font-bold tracking-widest text-accent uppercase">
