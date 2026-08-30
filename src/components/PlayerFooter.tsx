@@ -365,12 +365,17 @@ export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togg
       </div>
       )}
 
-      <audio ref={audioRef} className="hidden" />
+      <audio 
+        ref={audioRef} 
+        playsInline 
+        crossOrigin="anonymous" 
+        style={{ position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none' }} 
+      />
       
       <iframe
         ref={iframeRef}
-        className="hidden"
-        allow="autoplay; encrypted-media"
+        style={{ position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
+        allow="autoplay; encrypted-media; playsinline"
         src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/2126409108&auto_play=false"
       />
     </footer>
