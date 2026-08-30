@@ -62,9 +62,14 @@ export function MobileLibraryView({
   );
 
   return (
-    <div className="h-full w-full overflow-y-auto pt-[max(env(safe-area-inset-top,0px),44px)] pb-24 px-4 space-y-5 select-none scrollbar-none">
+    <div
+      style={{
+        paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)',
+      }}
+      className="h-full w-full overflow-y-auto pb-6 px-4 space-y-5 select-none scrollbar-none"
+    >
       {/* HEADER */}
-      <header className="flex items-center justify-between">
+      <header className="sticky top-0 z-30 -mx-4 px-4 py-2 bg-neutral-950/90 backdrop-blur-2xl border-b border-white/5 flex items-center justify-between">
         <div>
           <span className="text-[10px] font-bold tracking-widest text-accent uppercase">
             Colección Unificada

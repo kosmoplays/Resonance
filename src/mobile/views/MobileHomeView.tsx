@@ -11,6 +11,7 @@ import {
   Flame,
   Disc3,
   RefreshCw,
+  RotateCcw,
 } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -290,9 +291,14 @@ export function MobileHomeView({
   const totalLikesCount = (likes?.length || 0) + (scLikes?.length || 0) + (ytLikes?.length || 0);
 
   return (
-    <div className="h-full w-full overflow-y-auto pt-[max(env(safe-area-inset-top,0px),44px)] pb-24 px-4 space-y-6 select-none scrollbar-none">
+    <div
+      style={{
+        paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)',
+      }}
+      className="h-full w-full overflow-y-auto pb-6 px-4 space-y-6 select-none scrollbar-none"
+    >
       {/* TOP HEADER WITH LOGO & AVATAR */}
-      <header className="flex items-center justify-between">
+      <header className="sticky top-0 z-30 -mx-4 px-4 py-2.5 bg-neutral-950/90 backdrop-blur-2xl border-b border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <ResonanceLogo size={36} />
           <div>
@@ -310,9 +316,9 @@ export function MobileHomeView({
             className={`p-2.5 bg-white/5 active:bg-white/10 rounded-full text-neutral-400 active:text-white transition-all ${
               isRefreshing ? 'animate-spin text-accent' : ''
             }`}
-            aria-label="Refrescar"
+            aria-label="Actualizar"
           >
-            <RefreshCw size={18} />
+            <RotateCcw size={18} />
           </button>
 
           <button

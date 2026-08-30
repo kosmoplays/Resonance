@@ -116,7 +116,12 @@ export function MobileTrackListView({
   return (
     <div className="h-full w-full flex flex-col bg-neutral-950 text-white select-none relative overflow-hidden">
       {/* STICKY TOP HEADER */}
-      <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-2.5 pt-[max(env(safe-area-inset-top,0px),44px)] bg-neutral-950/80 backdrop-blur-2xl border-b border-white/10 flex-shrink-0">
+      <header
+        style={{
+          paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)',
+        }}
+        className="sticky top-0 z-30 flex items-center justify-between px-4 py-2.5 bg-neutral-950/90 backdrop-blur-2xl border-b border-white/10 flex-shrink-0"
+      >
         <div className="flex items-center gap-2 min-w-0">
           <button
             type="button"
@@ -158,7 +163,7 @@ export function MobileTrackListView({
       )}
 
       {/* SCROLLABLE CONTENT */}
-      <div className="flex-1 overflow-y-auto pb-24 px-3 scrollbar-none">
+      <div className="flex-1 overflow-y-auto pb-6 px-3 scrollbar-none">
         {/* ARTIST PROFILE HERO BANNER */}
         {isArtistProfile && (
           <div className="relative w-full rounded-3xl overflow-hidden shadow-2xl bg-neutral-900 my-3 border border-white/10">
