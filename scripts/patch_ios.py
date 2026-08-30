@@ -29,7 +29,7 @@ def patch_info_plist():
 
 def patch_swift_code():
     print("Buscando AppDelegate o App.swift para inyectar AVAudioSession...")
-    gen_dir = os.path.join("src-tauri", "gen", "apple", "Sources")
+    gen_dir = os.path.join("src-tauri", "gen", "apple")
     swift_files = []
     
     for root, dirs, files in os.walk(gen_dir):
@@ -38,7 +38,11 @@ def patch_swift_code():
                 swift_files.append(os.path.join(root, file))
 
     if not swift_files:
-        print("Error: No se encontraron archivos Swift.")
+        print("Error: No se encontraron archivos Swift en", gen_dir)
+        print("Contenido del directorio:")
+        for root, dirs, files in os.walk(gen_dir):
+            for file in files:
+                print(os.path.join(root, file))
         sys.exit(1)
 
     injected = False
