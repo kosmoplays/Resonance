@@ -11,7 +11,7 @@
   "app": {
     "windows": [],
     "security": {
-      "csp": "default-src 'self' tauri: http://localhost:1420; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://w.soundcloud.com https://www.youtube.com https://s.ytimg.com https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; media-src 'self' blob: https: http: data:; connect-src 'self' tauri: http: https: ws: wss: data: blob:; frame-src https://w.soundcloud.com https://www.youtube.com https://accounts.google.com;",
+      "csp": "default-src 'self' tauri: http://localhost:1420; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://w.soundcloud.com https://www.youtube.com https://s.ytimg.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; media-src 'self' blob: https: http: data:; connect-src 'self' tauri: http: https: ws: wss: data: blob:; frame-src https://w.soundcloud.com https://www.youtube.com https://accounts.google.com;",
       "capabilities": [
         {
           "identifier": "resonance-network-override",

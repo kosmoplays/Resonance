@@ -7,6 +7,20 @@ import { usePlayerStore, Track } from '../store/usePlayerStore';
 const CLIENT_ID = "lmRjTI0FqeXygHMXc3hRzS7hth20PNk5";
 const getScToken = () => localStorage.getItem("soundcloud_oauth_token") || "";
 
+// Si un servidor no responde en 6 segundos, lo damos por muerto y seguimos con los demás
+const fetchWithTimeout = async (url: string, options: any = {}, timeoutMs = 6000) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await tauriFetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timeoutId);
+    return res;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    throw err;
+  }
+};
+
 export function useAudioEngine() {
 const audioRef = useRef<HTMLAudioElement | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
@@ -143,7 +157,7 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
             console.log("🔴 [YOUTUBE] Pista detectada. Interceptando flujo de audio...");
             
             // 1. Extracción con Nodos Invidious + Piped en Paralelo
-            const invidiousNodes = [
+                        const invidiousNodes = [
               "https://invidious.nerdvpn.de",
               "https://inv.nadeko.net",
               "https://invidious.jing.rocks",
@@ -151,36 +165,26 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
             ];
             const pipedNodes = [
               "https://pipedapi.kavin.rocks",
-              "https://pipedapi.tokhmi.xyz",
-              "https://pipedapi.smnz.de"
+              "https://pipedapi-libre.kavin.rocks",
+              "https://pipedapi.adminforge.de",
+              "https://api.piped.yt",
+              "https://pipedapi.drgns.space",
+              "https://pipedapi.owo.si"
             ];
 
-            try {
+                        try {
               const fetchTasks = [
-                (async () => {
-                  const res = await tauriFetch("https://api.cobalt.tools/api/json", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "Accept": "application/json" },
-                    // CAMBIO: Forzamos m4a para iOS
-                    body: JSON.stringify({ url: `https://www.youtube.com/watch?v=${ytId}`, aFormat: "m4a", isAudioOnly: true })
-                  });
-                  if (!res.ok) throw new Error(`Cobalt error: ${res.status}`);
-                  const json = await res.json();
-                  if (json.url) return json.url;
-                  throw new Error("No audio stream in Cobalt");
-                })(),
-                                ...invidiousNodes.map(async (node) => {
-                  const res = await tauriFetch(`${node}/api/v1/videos/${ytId}`);
+                ...invidiousNodes.map(async (node) => {
+                  const res = await fetchWithTimeout(`${node}/api/v1/videos/${ytId}`);
                   if (!res.ok) throw new Error(`Invidious error: ${res.status}`);
                   const json = await res.json();
                   const formats = json.adaptiveFormats || [];
-                  // NUNCA webm: iOS no lo decodifica
                   const audioFormat = formats.find((f: any) => f.type?.includes('audio/mp4') || f.container === 'm4a');
                   if (audioFormat?.url) return audioFormat.url;
                   throw new Error("No audio stream in Invidious");
                 }),
                 ...pipedNodes.map(async (node) => {
-                  const res = await tauriFetch(`${node}/streams/${ytId}`);
+                  const res = await fetchWithTimeout(`${node}/streams/${ytId}`);
                   if (!res.ok) throw new Error(`Piped error: ${res.status}`);
                   const json = await res.json();
                   const audioFormats = json.audioStreams || [];
@@ -598,7 +602,9 @@ const playNext = useCallback((isAuto?: any) => {
   useEffect(() => {
     if (!trackUrl || useWidget || !audioRef.current) return;
     const audio = audioRef.current;
-    audio.crossOrigin = "anonymous";
+    if (!isMobile) {
+      audio.crossOrigin = "anonymous";
+    }
 
     // 1. Inicialización de la física de ondas (Web Audio API) y Estabilizador de Volumen (solo en desktop para no suspender audio en iOS)
     if (!isMobile && !audioContextRef.current) {
