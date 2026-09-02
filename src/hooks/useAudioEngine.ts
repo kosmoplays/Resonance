@@ -378,6 +378,7 @@ const playNext = useCallback((isAuto?: any) => {
     // Si encontramos una canción no bloqueada, la reproducimos. Si no, activamos autoplay.
     if (foundValid && activeList[nextIndex]) {
       console.log(`[AUTOPLAY] PLAY_NEXT_START. Reproduciendo pista de la lista en índice ${nextIndex}`);
+      isSystemNavigationRef.current = true;
       playTrack(activeList[nextIndex]);
     } else {
       const isAutoplay = usePlayerStore.getState().isAutoplayEnabled;
@@ -422,7 +423,7 @@ const playNext = useCallback((isAuto?: any) => {
             );
             if (candidates.length > 0) {
               const chosen = candidates[Math.floor(Math.random() * Math.min(candidates.length, 6))];
-              playTrack({ ...chosen, provider: 'soundcloud' });
+              isSystemNavigationRef.current = true;              playTrack({ ...chosen, provider: 'soundcloud' });
               return;
             }
           }
@@ -453,7 +454,7 @@ const playNext = useCallback((isAuto?: any) => {
               );
               if (candidates.length > 0) {
                 const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-                playTrack({ ...chosen, provider: 'soundcloud' });
+              isSystemNavigationRef.current = true;                playTrack({ ...chosen, provider: 'soundcloud' });
                 return;
               }
             }
@@ -485,7 +486,7 @@ const playNext = useCallback((isAuto?: any) => {
             );
             if (candidates.length > 0) {
               const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-              playTrack({ ...chosen, provider: 'soundcloud' });
+              isSystemNavigationRef.current = true;              playTrack({ ...chosen, provider: 'soundcloud' });
               return;
             }
           }
@@ -498,7 +499,7 @@ const playNext = useCallback((isAuto?: any) => {
         (t) => t.id !== sourceTrack.id && !blacklist.has(String(t.id))
       );
       if (valid.length > 0) {
-        playTrack(valid[Math.floor(Math.random() * valid.length)]);
+        isSystemNavigationRef.current = true;        playTrack(valid[Math.floor(Math.random() * valid.length)]);
       } else {
         setIsPlaying(false);
       }

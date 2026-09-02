@@ -35,20 +35,8 @@
   ],
   "scopes": {
     "http": [
-      "https://*.soundcloud.com/*",
-      "https://*.soundcloud.cloud/*",
-      "https://*.sndcdn.com/*",
-      "https://pipedapi.kavin.rocks/*",
-      "https://pipedapi.smnz.de/*",
-      "https://pipedapi.tokhmi.xyz/*",
-      "https://api.piped.projectsegfau.lt/*",
-      "https://vid.puffyan.us/*",
-      "https://invidious.flokinet.to/*",
-      "https://invidious.lunar.icu/*",
-      "https://yewtu.be/*",
-      "https://oauth2.googleapis.com/*",
-      "https://www.googleapis.com/*",
-      "https://music.youtube.com/*"
+      "https://**",
+      "http://**"
     ]
   }
 }

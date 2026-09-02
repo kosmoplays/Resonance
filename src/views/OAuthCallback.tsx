@@ -11,7 +11,7 @@ export function OAuthCallback() {
       return;
     }
 
-    const handleAuth = () => { // Quitamos el async, ya no lo necesitamos
+    const handleAuth = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get("code");
       const error = urlParams.get("error");
@@ -23,10 +23,17 @@ export function OAuthCallback() {
       }
 
       if (code) {
-        setStatus("¡Código cazado! Guardando en el buzón...");
+        setStatus("¡Código cazado! Enviando a la nave nodriza...");
         
-        // EL TRUCO DEL ALMACÉN: Guardamos los datos. 
-        // Al hacer esto, la ventana principal de Resonance saltará automáticamente.
+        try {
+          // Send event to the main window via Tauri IPC
+          const { emit } = await import('@tauri-apps/api/event');
+          await emit('oauth-success', { provider, code });
+        } catch (e) {
+          console.error("Tauri emit failed, falling back to localStorage", e);
+        }
+
+        // Fallback for web version
         localStorage.setItem("oauth-provider", provider);
         localStorage.setItem("oauth-code", code); 
 

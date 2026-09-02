@@ -90,13 +90,13 @@ export function MobileMiniPlayer({
       if (diffY < -40 && Math.abs(diffX) < 50) {
         onExpand();
       }
-      // Swipe Left -> Previous track
+      // Swipe Left -> Next track
       else if (diffX < -80) {
-        playPrevious();
-      }
-      // Swipe Right -> Next track
-      else if (diffX > 80) {
         playNext();
+      }
+      // Swipe Right -> Previous track
+      else if (diffX > 80) {
+        playPrevious();
       }
     }
     touchStartX.current = null;

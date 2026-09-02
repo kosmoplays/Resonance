@@ -741,12 +741,12 @@ const [isOffline, setIsOffline] = useState(!navigator.onLine);
                              key={idx}
                              id={`lyric-${idx}`}
                              onClick={() => handleSeek(line.time)}
-                             className={`transition-all duration-500 ease-out origin-left cursor-pointer leading-relaxed w-[85%] ${isLyricsExpanded ? 'text-3xl' : 'text-xl'} ${
+                             className={`transition-all duration-300 ease-out origin-left cursor-pointer leading-relaxed w-[85%] font-bold ${isLyricsExpanded ? 'text-3xl' : 'text-xl'} ${
                                isActive
-                                 ? 'font-black text-white scale-[1.05] drop-shadow-[0_0_25px_rgba(255,255,255,0.6)]'
+                                 ? 'text-white scale-[1.05] drop-shadow-[0_0_25px_rgba(255,255,255,0.6)]'
                                  : isPast
-                                 ? 'font-bold text-neutral-400 opacity-40 scale-100'
-                                 : 'font-bold text-neutral-300 opacity-60 blur-[0.5px] scale-100'
+                                 ? 'text-neutral-400 opacity-40 scale-100'
+                                 : 'text-neutral-300 opacity-60 blur-[0.5px] scale-100'
                              } hover:text-white hover:opacity-100 hover:blur-none hover:scale-[1.05]`}
                            >
                              {line.text || "♪"}

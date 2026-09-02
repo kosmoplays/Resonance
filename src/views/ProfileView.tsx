@@ -181,13 +181,15 @@ export function ProfileView({ likes, resonancePlaylists, follows }: any) {
     try {
       // Credenciales maestras de Google Cloud inyectadas
       const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string;
+      const clientSecret = import.meta.env.VITE_GOOGLE_CLIENT_SECRET as string || "";
       const redirectUri = "http://127.0.0.1:1420/callback";
 
       const tokenBody = new URLSearchParams({
         grant_type: "authorization_code",
         code: authCode,
         redirect_uri: redirectUri,
-        client_id: clientId
+        client_id: clientId,
+        client_secret: clientSecret
       });
 
       // 🛡️ Bypaseamos el CORS de Google enviando la petición por el backend (Tauri)
@@ -263,11 +265,15 @@ export function ProfileView({ likes, resonancePlaylists, follows }: any) {
   };
 
   useEffect(() => {
-    const handleStorage = async (e: StorageEvent) => {
-      if (e.key === "oauth-code" && e.newValue) {
-        const code = e.newValue;
-        const provider = localStorage.getItem("oauth-provider");
-        
+    const handleStorage = async (e?: StorageEvent) => {
+      // Allow calling this manually without an event object
+      const isYouTubeCallback = !e; 
+      if (!isYouTubeCallback && e?.key !== "oauth-code") return;
+
+      const code = localStorage.getItem("oauth-code");
+      const provider = localStorage.getItem("oauth-provider");
+      
+      if (code && provider) {
         localStorage.removeItem("oauth-code");
         localStorage.removeItem("oauth-provider");
         
@@ -288,7 +294,22 @@ export function ProfileView({ likes, resonancePlaylists, follows }: any) {
     };
 
     window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    
+    // Tauri IPC Listener for OAuth Callback (handles cross-origin WebView storage isolation)
+    let unlistenTauri: () => void;
+    import('@tauri-apps/api/event').then(({ listen }) => {
+      listen('oauth-success', async (event: any) => {
+        const { provider, code } = event.payload;
+        localStorage.setItem("oauth-provider", provider);
+        localStorage.setItem("oauth-code", code);
+        handleStorage(); // Trigger manually
+      }).then(unlisten => { unlistenTauri = unlisten; });
+    });
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      if (unlistenTauri) unlistenTauri();
+    };
   }, []);
 
   return (

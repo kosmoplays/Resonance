@@ -533,12 +533,12 @@ export function MobileFullPlayer({
                         key={idx}
                         ref={isActive ? activeLyricRef : null}
                         onClick={() => handleSeek(line.time)}
-                        className={`cursor-pointer transition-all duration-300 select-none px-2 break-words whitespace-normal max-w-full leading-snug ${
+                        className={`cursor-pointer transition-all duration-300 select-none px-2 break-words whitespace-normal max-w-full leading-snug font-bold text-lg origin-left ${
                           isActive
-                            ? 'text-white font-black text-xl md:text-2xl drop-shadow-[0_0_20px_rgba(255,255,255,0.7)]'
+                            ? 'text-white scale-[1.15] drop-shadow-[0_0_20px_rgba(255,255,255,0.7)]'
                             : isPast
-                            ? 'text-neutral-500 text-lg font-bold hover:text-neutral-300'
-                            : 'text-neutral-600 text-lg font-bold hover:text-neutral-400'
+                            ? 'text-neutral-500 scale-100 hover:text-neutral-300'
+                            : 'text-neutral-600 scale-100 hover:text-neutral-400'
                         }`}
                       >
                         {line.text || '♪'}
