@@ -397,11 +397,7 @@ export function MobileTrackListView({
                       {artist.username}
                     </span>
                     <span className="text-[10px] text-neutral-400 font-medium block mt-0.5">
-                      {artist.followers_count > 0
-                        ? `${new Intl.NumberFormat('es-ES', { notation: 'compact' }).format(
-                            artist.followers_count
-                          )} seguidores`
-                        : 'Artista'}
+                      Artista
                     </span>
                   </div>
                 </div>

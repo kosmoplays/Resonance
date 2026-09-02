@@ -514,44 +514,6 @@ export function MobileHomeView({
           </div>
         </section>
       )}
-
-      {/* RESONANCE PLAYLISTS CAROUSEL */}
-      {resonancePlaylists && resonancePlaylists.length > 0 && (
-        <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ListMusic size={16} className="text-purple-400" />
-              <h2 className="text-base font-bold text-white tracking-tight">Tus Playlists</h2>
-            </div>
-            <button
-              onClick={() => onNavigateTab('library')}
-              className="text-xs font-semibold text-accent hover:underline"
-            >
-              Biblioteca
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            {resonancePlaylists.slice(0, 4).map((pl: any) => (
-              <div
-                key={pl.id}
-                onClick={() => openPlaylist(pl, pl.title, true)}
-                className="p-3.5 bg-white/5 hover:bg-white/10 active:scale-[0.98] rounded-2xl border border-white/5 transition-all cursor-pointer flex flex-col justify-between h-28"
-              >
-                <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center">
-                  <ListMusic size={18} />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-white truncate">{pl.title}</h4>
-                  <p className="text-[10px] text-neutral-400 mt-0.5">
-                    {pl.tracks?.length || 0} canciones
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 }

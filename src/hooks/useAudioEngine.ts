@@ -79,10 +79,10 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
     console.log(`\n\n--- INICIANDO REPRODUCCIÓN: ${track.title} ---`);
     if (stateRefs.current.currentTrack?.id === track.id) { togglePlay(); return; }
 
-    // 🛡️ ANCLAJE DE CONTEXTO: Si se proporciona una lista explícita, la fijamos. Si no, mantenemos la lista previa.
+    // 🛡️ ANCLAJE DE CONTEXTO: Si se proporciona una lista explícita, la fijamos. Si no, tomamos la lista activa.
     if (customContext && customContext.length > 0) {
       contextTracksRef.current = [...customContext];
-    } else if (!isSystemNavigationRef.current && contextTracksRef.current.length === 0) {
+    } else if (!isSystemNavigationRef.current) {
       contextTracksRef.current = [...stateRefs.current.viewTracks];
     }
     isSystemNavigationRef.current = false; // Reset del gatillo de sistema
@@ -228,6 +228,13 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
             console.log("🟠 [YOUTUBE] Iniciando Iframe Fallback (Puede requerir Play manual en iOS)");
             setUseWidget(true);
             activeWidgetRef.current = 'youtube';
+            
+            // 🛡️ MANTENER MEDIASESSION EN IOS: Alimentamos el audioRef con silencio para no perder los controles nativos
+            if (audioRef.current) {
+              audioRef.current.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+              audioRef.current.loop = true;
+              audioRef.current.play().catch(()=>{});
+            }
 
             if (ytWidgetRef.current && ytReadyRef.current) {
               ytWidgetRef.current.loadVideoById({ videoId: ytId });
@@ -278,6 +285,11 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
             console.log("⚠️ Pista bloqueada por DRM. Inyectando en Caballo de Troya (Widget SC)...");
             setUseWidget(true);
             activeWidgetRef.current = 'soundcloud';
+            if (audioRef.current) {
+              audioRef.current.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+              audioRef.current.loop = true;
+              audioRef.current.play().catch(()=>{});
+            }
           }
      } catch (error) {
         console.error("❌ Error fatal en playTrack:", error);
@@ -555,6 +567,11 @@ const playNext = useCallback((isAuto?: any) => {
         if (state === 1) ytWidgetRef.current.pauseVideo();
         else ytWidgetRef.current.playVideo();
       }
+      // Mantener sincronizado el audio silencioso para iOS Lock Screen
+      if (audioRef.current && isMobile) {
+        if (audioRef.current.paused) audioRef.current.play().catch(()=>{});
+        else audioRef.current.pause();
+      }
     } else if (audioRef.current) {
       if (audioRef.current.paused) { audioRef.current.play(); setIsPlaying(true); }
       else { audioRef.current.pause(); setIsPlaying(false); }
@@ -763,13 +780,28 @@ const playNext = useCallback((isAuto?: any) => {
             onStateChange: (event: any) => {
                 const YT = (window as any).YT;
                 if (event.data === YT.PlayerState.PLAYING) {
+                  if (activeWidgetRef.current !== 'youtube') {
+                    console.warn("🛡️ [ANTI-FANTASMA] YT Widget intentó reproducir pero ya no es activo. Pausando.");
+                    if (ytWidgetRef.current) ytWidgetRef.current.pauseVideo();
+                    return;
+                  }
+                  if (isMobile && audioRef.current && audioRef.current.paused) {
+                    audioRef.current.play().catch(()=>{});
+                  }
                   setIsPlaying(true);
                   setIsAudioLoading(false);
                   // ESTABILIZADOR: Aplicamos el Gain Staging (-35%) en el milisegundo exacto de arranque
                   if (ytWidgetRef.current) ytWidgetRef.current.setVolume(usePlayerStore.getState().volume * 65);
                 }
-                else if (event.data === YT.PlayerState.PAUSED) setIsPlaying(false);
-                else if (event.data === YT.PlayerState.ENDED) playNext(true);
+                else if (event.data === YT.PlayerState.PAUSED) {
+                  if (activeWidgetRef.current === 'youtube') {
+                    setIsPlaying(false);
+                    if (isMobile && audioRef.current) audioRef.current.pause();
+                  }
+                }
+                else if (event.data === YT.PlayerState.ENDED) {
+                  if (activeWidgetRef.current === 'youtube') playNext(true);
+                }
               },
             onError: (error: any) => {
               console.warn("🚫 YT Iframe Event Error:", error.data);
@@ -800,13 +832,28 @@ const checkWidget = () => {
         widgetRef.current = widget;
 
         widget.bind(SC.Widget.Events.PLAY, () => {
+            if (activeWidgetRef.current !== 'soundcloud') {
+                console.warn("🛡️ [ANTI-FANTASMA] SC Widget intentó reproducir pero ya no es activo. Pausando.");
+                widget.pause();
+                return;
+            }
+            if (isMobile && audioRef.current && audioRef.current.paused) {
+                audioRef.current.play().catch(()=>{});
+            }
             setIsPlaying(true);
             setIsAudioLoading(false);
             // ESCUDO ANTI-DRM: Obligamos al widget a acatar la compresión de volumen justo al arrancar
             widget.setVolume(usePlayerStore.getState().volume * 65);
           });
-          widget.bind(SC.Widget.Events.PAUSE, () => setIsPlaying(false));
-          widget.bind(SC.Widget.Events.FINISH, () => playNext(true));
+          widget.bind(SC.Widget.Events.PAUSE, () => {
+             if (activeWidgetRef.current === 'soundcloud') {
+                setIsPlaying(false);
+                if (isMobile && audioRef.current) audioRef.current.pause();
+             }
+          });
+          widget.bind(SC.Widget.Events.FINISH, () => {
+             if (activeWidgetRef.current === 'soundcloud') playNext(true);
+          });
                 
         widget.bind(SC.Widget.Events.PLAY_PROGRESS, (data: any) => {
           // ESCUDO ANTI-FANTASMAS SC: Evita que SC pise el tiempo de YT con 0:00

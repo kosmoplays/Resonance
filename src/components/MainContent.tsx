@@ -252,7 +252,7 @@ export function MainContent({
                           <div className="flex flex-col">
                             <span className="text-white font-bold group-hover:text-emerald-400 transition-colors">{user.username || user.name}</span>
                             <span className="text-xs text-neutral-400">
-                              {user.followers_count > 0 ? new Intl.NumberFormat('es-ES').format(user.followers_count) + ' seguidores' : 'Sin datos de seguidores'}
+                              Artista
                             </span>
                           </div>
                         </div>

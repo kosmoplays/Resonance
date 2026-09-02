@@ -184,11 +184,7 @@ export function MobileSearchView({
                               {user.username}
                             </span>
                             <span className="text-[10px] text-neutral-400 font-medium block mt-0.5">
-                              {user.followers_count > 0
-                                ? `${new Intl.NumberFormat('es-ES', { notation: 'compact' }).format(
-                                    user.followers_count
-                                  )} seguidores`
-                                : 'Artista'}
+                              Artista
                             </span>
                           </div>
                         </div>

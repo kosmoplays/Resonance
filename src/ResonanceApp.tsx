@@ -83,8 +83,10 @@ const [isOffline, setIsOffline] = useState(!navigator.onLine);
   } = useSoundCloud(isOffline);
   
   useEffect(() => {
-    loadLibrary();
-  }, []);
+    if (session) {
+      loadLibrary();
+    }
+  }, [session]);
 
   // Manejo de atajos globales
   useEffect(() => {

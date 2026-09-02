@@ -24,6 +24,9 @@ interface MobileContextMenuProps {
     ytLikes: any[];
     resonancePlaylists: any[];
     addTrackToPlaylist: (playlistId: string, track: any) => void;
+    removeTrackFromPlaylist?: (playlistId: string, trackId: string | number) => void;
+    removeLikeExternal?: (track: any, viewTitle: string) => void;
+    viewTitle?: string;
     openArtistProfile?: (user: any) => void;
     hideFromResonance?: (track: any) => void;
   };
@@ -51,8 +54,16 @@ export function MobileContextMenu({
     ytLikes,
     resonancePlaylists,
     addTrackToPlaylist,
+    removeTrackFromPlaylist,
+    removeLikeExternal,
+    viewTitle,
     openArtistProfile,
   } = scProps;
+
+  const activeResonancePlaylist = resonancePlaylists?.find(p => p.title === viewTitle);
+  const isLikeList = viewTitle === "Tus Me Gusta" || viewTitle === "Me Gusta (SoundCloud)" || viewTitle === "Me Gusta (YouTube)";
+  const canDelete = activeResonancePlaylist || isLikeList;
+
   const { queue, autoplayBlacklist } = usePlayerStore();
   const isAutoplayExcluded = Boolean(track?.id && autoplayBlacklist && autoplayBlacklist.includes(String(track.id)));
 
@@ -377,6 +388,28 @@ export function MobileContextMenu({
                 </div>
               </button>
 
+              {/* ELIMINAR DE PLAYLIST */}
+              {canDelete && (
+                <button
+                  className="w-full flex items-center gap-3.5 p-3.5 bg-red-500/10 active:bg-red-500/20 rounded-2xl transition-colors text-left mb-2"
+                  onClick={() => {
+                    if (activeResonancePlaylist && removeTrackFromPlaylist) {
+                      removeTrackFromPlaylist(activeResonancePlaylist.id, track.id);
+                    } else if (isLikeList) {
+                      if (viewTitle === "Tus Me Gusta") {
+                        toggleLike(track);
+                      } else if (removeLikeExternal && viewTitle) {
+                        removeLikeExternal(track, viewTitle);
+                      }
+                    }
+                    close();
+                  }}
+                >
+                  <Trash2 size={20} className="text-red-400" />
+                  <span className="font-semibold text-sm text-red-400">Eliminar de la lista</span>
+                </button>
+              )}
+
               {/* ELIMINAR DE RESONANCE (MANDAR A LÁZARO Y NUNCA VOLVER A MOSTRAR NI REPRODUCIR) */}
               <button
                 onClick={() => {
@@ -396,7 +429,7 @@ export function MobileContextMenu({
                   );
                   close();
                 }}
-                className="w-full flex items-center gap-3.5 p-3.5 bg-red-500/10 active:bg-red-500/20 border border-red-500/20 rounded-2xl transition-colors text-left"
+                className="w-full flex items-center gap-3.5 p-3.5 bg-red-900/40 active:bg-red-900/60 border border-red-500/20 rounded-2xl transition-colors text-left"
               >
                 <Trash2 size={20} className="text-red-400 flex-shrink-0" />
                 <div className="min-w-0">

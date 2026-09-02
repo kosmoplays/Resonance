@@ -161,6 +161,7 @@ export function useResonanceLibrary(isOffline: boolean, viewTitle: string, setPl
                if (likesPageRes.status === 401 || errText.includes("401")) {
                    console.warn("🛡 Auto-Purga: Token de YouTube expirado. Se requiere re-vinculación.");
                    localStorage.removeItem("youtube_access_token");
+                   localStorage.removeItem("youtube_refresh_token");
                    window.dispatchEvent(new CustomEvent('show-toast', { detail: { msg: 'Token de YouTube expirado. Ve a Perfil para re-vincular.', type: 'error' } }));
                }
              }

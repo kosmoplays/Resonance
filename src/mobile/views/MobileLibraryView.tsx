@@ -11,8 +11,10 @@ import {
   Sparkles,
   ExternalLink,
   Music2,
+  Edit3,
 } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
+import { MobileEditPlaylistModal } from '../components/MobileEditPlaylistModal';
 
 interface MobileLibraryViewProps {
   scProps: {
@@ -28,6 +30,7 @@ interface MobileLibraryViewProps {
     openPlaylist: (playlist: any, title?: string, isResonance?: boolean) => void;
     openView: (title: string, tracks?: any[]) => void;
     openArtistProfile: (user: any) => void;
+    updatePlaylist: (id: string, title: string, artwork: string) => void;
   };
   onCreatePlaylist: () => void;
 }
@@ -48,13 +51,16 @@ export function MobileLibraryView({
     deletedHistory,
     recoverTrack,
     deletePlaylist,
+    updatePlaylist,
     openPlaylist,
     openView,
     openArtistProfile,
   } = scProps;
 
-  const { localTracks } = usePlayerStore();
+  const { localTracks, listeningHistory } = usePlayerStore();
   const [activeFilter, setActiveFilter] = useState<LibraryFilter>('all');
+  const [playlistToEdit, setPlaylistToEdit] = useState<any>(null);
+  const [showEditPlaylist, setShowEditPlaylist] = useState(false);
 
   const totalDeletedCount = Object.values(deletedHistory || {}).reduce(
     (acc, arr) => acc + (arr?.length || 0),
@@ -95,9 +101,6 @@ export function MobileLibraryView({
           { id: 'playlists', label: `Playlists (${(resonancePlaylists?.length || 0) + (playlists?.length || 0)})` },
           { id: 'likes', label: 'Me Gusta' },
           { id: 'artists', label: `Artistas (${follows?.length || 0})` },
-          ...(totalDeletedCount > 0
-            ? [{ id: 'lazaro', label: `Lázaro (${totalDeletedCount})` }]
-            : []),
         ].map((tab) => (
           <button
             key={tab.id}
@@ -172,7 +175,7 @@ export function MobileLibraryView({
 
             {/* HISTORIAL */}
             <div
-              onClick={() => openView('Historial de Reproducción', [])}
+              onClick={() => openView('Historial de Reproducción', listeningHistory || [])}
               className="p-4 rounded-2xl bg-gradient-to-br from-blue-900/60 to-neutral-900 border border-blue-500/30 shadow-lg cursor-pointer active:scale-95 transition-all flex flex-col justify-between h-32"
             >
               <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
@@ -218,18 +221,31 @@ export function MobileLibraryView({
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (confirm(`¿Eliminar la playlist "${pl.title}"?`)) {
-                        deletePlaylist(pl.id);
-                      }
-                    }}
-                    className="p-2 text-neutral-500 hover:text-red-400 active:scale-90 transition-colors"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPlaylistToEdit(pl);
+                        setShowEditPlaylist(true);
+                      }}
+                      className="p-2 text-neutral-500 hover:text-blue-400 active:scale-90 transition-colors"
+                    >
+                      <Edit3 size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm(`¿Eliminar la playlist "${pl.title}"?`)) {
+                          deletePlaylist(pl.id);
+                        }
+                      }}
+                      className="p-2 text-neutral-500 hover:text-red-400 active:scale-90 transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
               ))
             ) : (
@@ -369,41 +385,16 @@ export function MobileLibraryView({
         </section>
       )}
 
-      {/* SECTION 4: MOTOR LÁZARO (If lazaro or all with deleted) */}
-      {(activeFilter === 'all' || activeFilter === 'lazaro') && totalDeletedCount > 0 && (
-        <section className="space-y-3 pt-2">
-          <div className="flex items-center gap-2">
-            <RotateCcw size={16} className="text-amber-400" />
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-              Motor Lázaro (Pistas Eliminadas)
-            </h3>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-2">
-            <p className="text-xs text-amber-200/80 mb-2">
-              Puedes restaurar canciones que hayas borrado recientemente de tus listas.
-            </p>
-            {Object.entries(deletedHistory).map(([listTitle, tracks]) =>
-              (tracks || []).map((t: any) => (
-                <div
-                  key={t.id}
-                  className="flex items-center justify-between p-2 rounded-xl bg-black/40 border border-white/5"
-                >
-                  <div className="min-w-0 flex-1 pr-2">
-                    <p className="text-xs font-bold text-white truncate">{t.title}</p>
-                    <p className="text-[10px] text-neutral-400 truncate">Origen: {listTitle}</p>
-                  </div>
-                  <button
-                    onClick={() => recoverTrack(t, listTitle)}
-                    className="px-2.5 py-1.5 bg-amber-500 text-black font-bold text-xs rounded-lg active:scale-95"
-                  >
-                    Recuperar
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </section>
+      {showEditPlaylist && playlistToEdit && (
+        <MobileEditPlaylistModal
+          isOpen={showEditPlaylist}
+          onClose={() => {
+            setShowEditPlaylist(false);
+            setPlaylistToEdit(null);
+          }}
+          playlist={playlistToEdit}
+          onUpdate={updatePlaylist}
+        />
       )}
     </div>
   );

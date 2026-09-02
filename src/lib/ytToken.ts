@@ -53,6 +53,14 @@ async function refreshYtToken(refreshToken: string): Promise<string | null> {
   } catch (e) {
     console.error('Error renovando token de YT:', e);
   }
+  
+  // Si llegamos aquí, el refresh token es inválido o expiró
+  console.warn("🛡 Auto-Purga en ytToken: Refresh token expirado o revocado.");
+  localStorage.removeItem('youtube_access_token');
+  localStorage.removeItem('youtube_refresh_token');
+  window.dispatchEvent(new CustomEvent('show-toast', {
+    detail: { msg: 'Sesión de YouTube expirada. Ve a Perfil para re-vincular.', type: 'error' }
+  }));
   return null;
 }
 
