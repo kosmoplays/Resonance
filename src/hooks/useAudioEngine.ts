@@ -156,8 +156,8 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
             
             console.log("🔴 [YOUTUBE] Pista detectada. Interceptando flujo de audio...");
             
-            // 1. Extracción con Nodos Invidious + Piped en Paralelo
-                        const invidiousNodes = [
+            // 1. Extracción con InnerTube ANDROID_VR (Directo sin intermediarios caídos) + Nodos de Respaldo
+            const invidiousNodes = [
               "https://invidious.nerdvpn.de",
               "https://inv.nadeko.net",
               "https://invidious.jing.rocks",
@@ -172,8 +172,25 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
               "https://pipedapi.owo.si"
             ];
 
-                        try {
+            try {
               const fetchTasks = [
+                // InnerTube Direct Stream (Sin intermediario, streamingData nativo m4a/aac)
+                (async () => {
+                  const itRes = await fetchWithTimeout('https://www.youtube.com/youtubei/v1/player', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0' },
+                    body: JSON.stringify({
+                      context: { client: { clientName: 'ANDROID_VR', clientVersion: '1.61.48', deviceModel: 'Quest 3' } },
+                      videoId: ytId
+                    })
+                  }, 5000);
+                  if (!itRes.ok) throw new Error(`InnerTube error: ${itRes.status}`);
+                  const itData = await itRes.json();
+                  const formats = itData.streamingData?.adaptiveFormats || [];
+                  const m4a = formats.find((f: any) => f.mimeType?.includes('audio/mp4') && f.url);
+                  if (m4a?.url) return m4a.url;
+                  throw new Error("No direct M4A in InnerTube");
+                })(),
                 ...invidiousNodes.map(async (node) => {
                   const res = await fetchWithTimeout(`${node}/api/v1/videos/${ytId}`);
                   if (!res.ok) throw new Error(`Invidious error: ${res.status}`);
@@ -700,29 +717,48 @@ const playNext = useCallback((isAuto?: any) => {
      const initYT = () => {
        if (ytWidgetRef.current) return;
        
-       // BLINDAJE CONTRA HOT-RELOADS: Usar o crear el div de forma segura
+       // BLINDAJE CONTRA HOT-RELOADS Y ERROR 153:
+       // YouTube exige que el contenedor mida al menos 200x200 y no esté fuera de pantalla (-9999px)
+       // para no considerarlo un bot/fraude publicitario.
        let container = document.getElementById('yt-player-container');
        if (!container) {
          container = document.createElement('div');
          container.id = 'yt-player-container';
          container.style.position = 'fixed';
-         container.style.top = '-9999px';
-         container.style.left = '-9999px';
-         container.style.width = '10px';
-         container.style.height = '10px';
-         container.style.opacity = '0';
+         container.style.bottom = '0';
+         container.style.right = '0';
+         container.style.width = '200px';
+         container.style.height = '200px';
+         container.style.opacity = '0.001';
          container.style.pointerEvents = 'none';
          container.style.zIndex = '-9999';
          document.body.appendChild(container);
        }
 
+       // NO enviamos origin: window.location.origin porque en Tauri iOS es tauri://localhost
+       // y YouTube rechaza orígenes no HTTP/HTTPS con Error 153.
        ytWidgetRef.current = new (window as any).YT.Player('yt-player-container', {
-          height: '10', width: '10',
-          playerVars: { autoplay: 1, controls: 0, disablekb: 1, fs: 0, playsinline: 1, origin: window.location.origin },
+          height: '200',
+          width: '200',
+          host: 'https://www.youtube-nocookie.com',
+          playerVars: { 
+            autoplay: 1, 
+            controls: 0, 
+            disablekb: 1, 
+            fs: 0, 
+            playsinline: 1, 
+            enablejsapi: 1, 
+            rel: 0 
+          },
           events: {
             onReady: () => {
               console.log("🚀 Caballo de Troya YT pre-calentado y listo.");
               ytReadyRef.current = true;
+              // Asegurar referrerpolicy en el iframe creado
+              try {
+                const iframe = document.querySelector('#yt-player-container iframe');
+                if (iframe) (iframe as HTMLElement).setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+              } catch (e) {}
             },
             onStateChange: (event: any) => {
                 const YT = (window as any).YT;

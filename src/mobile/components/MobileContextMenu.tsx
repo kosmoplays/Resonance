@@ -183,7 +183,9 @@ export function MobileContextMenu({
         style={{
           transform: dragOffsetY > 0 ? `translateY(${dragOffsetY}px)` : undefined,
         }}
-        className={`relative bg-neutral-900/95 border-t border-white/10 rounded-t-[32px] p-6 pb-[max(env(safe-area-inset-bottom,0px),24px)] shadow-[0_-20px_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl transition-transform duration-300 ease-out max-h-[85vh] flex flex-col ${
+        className={`relative bg-neutral-900/95 border-t border-white/10 rounded-t-[32px] p-6 pb-[max(env(safe-area-inset-bottom,0px),24px)] shadow-[0_-20px_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl ${
+          dragOffsetY > 0 ? '' : 'transition-transform duration-300 ease-out'
+        } max-h-[85vh] flex flex-col ${
           mounted ? 'translate-y-0' : 'translate-y-full'
         }`}
       >
