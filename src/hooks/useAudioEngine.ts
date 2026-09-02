@@ -682,6 +682,7 @@ const playNext = useCallback((isAuto?: any) => {
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     audio.addEventListener("ended", handleEnded);
 
+    audio.loop = false; // Reset the loop that may have been injected by MediaSession silence payload
     audio.src = trackUrl;
     audio.load();
     
