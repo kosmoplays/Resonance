@@ -14,7 +14,7 @@ export function MainContent({
   useWidget, openArtistProfile, likes, scLikes, ytLikes, toggleLike, removeLikeExternal, resonancePlaylists,
   addTrackToPlaylist, removeTrackFromPlaylist, follows, toggleFollow, goBack, openPlaylist, loadMoreYtLikes, deletedHistory, recoverTrack }: any) {
   const isMobile = useMobile();
-  const { viewTracks, viewUsers, viewPlaylists, currentTrack, isPlaying } = usePlayerStore();
+  const { viewTracks, viewUsers, viewPlaylists, currentTrack, isPlaying, autoplayBlacklist } = usePlayerStore();
 
   const isProfile = viewTitle.startsWith('Perfil:');
   const isSearch = viewTitle.startsWith('Resultados:');
@@ -553,12 +553,13 @@ export function MainContent({
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-3">
                               {restTracks.map((track: any) => {
                                 const isActive = currentTrack?.id === track.id;
+                                const isExcluded = autoplayBlacklist?.includes(String(track.id));
                                 return (
                                   <div
                                     key={track.id}
                                     className={`flex flex-col rounded-xl transition-all duration-300 group border overflow-hidden ${
                                       isActive ? 'bg-purple-500/10 border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.1)]' : 'bg-transparent border-transparent hover:bg-white/5 hover:border-white/10'
-                                    }`}
+                                    } ${isExcluded && !isActive ? 'opacity-40 grayscale-[50%]' : ''}`}
                                   >
                                     <div 
                                       onClick={() => playTrack(track)}

@@ -64,12 +64,17 @@ const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   useEffect(() => {
     const handleToast = (e: any) => {
-      const newToast = { msg: e.detail.msg, type: e.detail.type || 'success', id: Date.now() };
+      const newToast = { ...e.detail, id: Date.now() };
       setToast(newToast);
       setTimeout(() => setToast(current => current?.id === newToast.id ? null : current), 3500);
     };
+    const hideToast = () => setToast(null);
     window.addEventListener('show-toast', handleToast);
-    return () => window.removeEventListener('show-toast', handleToast);
+    window.addEventListener('hide-toast', hideToast);
+    return () => {
+      window.removeEventListener('show-toast', handleToast);
+      window.removeEventListener('hide-toast', hideToast);
+    };
   }, []);
 
   const { audioRef, iframeRef, playTrack, playNext, playPrevious, togglePlay, handleSeek, setIsSeeking, analyserRef, useWidget, isAudioLoading, hasHistory } = useAudioEngine();

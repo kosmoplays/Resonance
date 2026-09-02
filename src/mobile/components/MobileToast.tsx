@@ -10,13 +10,48 @@ interface MobileToastProps {
 }
 
 export function MobileToast({ toast }: MobileToastProps) {
+  const [offsetY, setOffsetY] = React.useState(0);
+  const touchStartY = React.useRef(0);
+
+  // Reset offset when toast changes
+  React.useEffect(() => {
+    setOffsetY(0);
+  }, [toast]);
+
   if (!toast) return null;
 
   const isError = toast.type === 'error';
   const isInfo = toast.type === 'info';
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const currentY = e.touches[0].clientY;
+    const diff = currentY - touchStartY.current;
+    // Solo permitimos swipe hacia arriba (diff negativo)
+    if (diff < 0) {
+      setOffsetY(diff);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (offsetY < -30) {
+      window.dispatchEvent(new CustomEvent('hide-toast'));
+    } else {
+      setOffsetY(0);
+    }
+  };
+
   return (
-    <div className="fixed top-[calc(env(safe-area-inset-top,0px)+12px)] left-4 right-4 z-[150] flex items-center gap-3 px-4 py-3 rounded-2xl bg-neutral-900/90 backdrop-blur-xl border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.8)] animate-in slide-in-from-top-4 fade-in duration-300 pointer-events-none">
+    <div 
+      className="fixed top-[calc(env(safe-area-inset-top,0px)+12px)] left-4 right-4 z-[150] flex items-center gap-3 px-4 py-3 rounded-2xl bg-neutral-900/90 backdrop-blur-xl border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.8)] animate-in slide-in-from-top-4 fade-in duration-300 pointer-events-auto transition-transform"
+      style={{ transform: `translateY(${offsetY}px)` }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {isError ? (
         <AlertCircle size={18} className="text-red-400 flex-shrink-0" />
       ) : isInfo ? (

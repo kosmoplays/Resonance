@@ -77,7 +77,7 @@ export function MobileMiniPlayer({
     if (touchStartX.current === null) return;
     const diffX = e.touches[0].clientX - touchStartX.current;
     if (Math.abs(diffX) > 10) {
-      setSwipeOffset(diffX * 0.4);
+      setSwipeOffset(diffX);
     }
   };
 
@@ -90,12 +90,12 @@ export function MobileMiniPlayer({
       if (diffY < -40 && Math.abs(diffX) < 50) {
         onExpand();
       }
-      // Swipe Right -> Previous track
-      else if (diffX > 60) {
+      // Swipe Left -> Previous track
+      else if (diffX < -80) {
         playPrevious();
       }
-      // Swipe Left -> Next track
-      else if (diffX < -60) {
+      // Swipe Right -> Next track
+      else if (diffX > 80) {
         playNext();
       }
     }
@@ -111,8 +111,11 @@ export function MobileMiniPlayer({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        style={{ transform: `translateX(${swipeOffset}px)` }}
-        className="group relative flex items-center bg-neutral-900/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-[0_10px_30px_rgba(0,0,0,0.6)] active:scale-[0.99] transition-all cursor-pointer overflow-hidden select-none touch-manipulation"
+        style={{ 
+          transform: `translateX(${swipeOffset}px)`,
+          transition: swipeOffset === 0 ? 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), scale 0.1s' : 'none'
+        }}
+        className="group relative flex items-center bg-neutral-900/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-[0_10px_30px_rgba(0,0,0,0.6)] active:scale-[0.99] cursor-pointer overflow-hidden select-none touch-manipulation"
       >
         {/* PROGRESS BAR (SLIM TOP LINE) */}
         <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-white/10">
