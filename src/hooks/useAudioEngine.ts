@@ -52,15 +52,15 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
 
  // Leemos y escribimos en nuestro "Cerebro" (Zustand)
   const {
-    currentTrack, viewTracks, volume, isShuffle, loopMode, progress, duration, queue, autoplayBlacklist, trackCuts, isPlaying,
+    currentTrack, viewTracks, volume, isShuffle, loopMode, progress, duration, queue, autoplayBlacklist, trackCuts, isPlaying, listeningHistory,
     setCurrentTrack, setIsPlaying, setProgress, setDuration,
   } = usePlayerStore();
 
    // Ref state para evitar bucles de dependencias al cambiar de canción
-  const stateRefs = useRef({ currentTrack, viewTracks, isShuffle, loopMode, progress, queue, autoplayBlacklist, trackCuts }); 
+  const stateRefs = useRef({ currentTrack, viewTracks, isShuffle, loopMode, progress, queue, autoplayBlacklist, trackCuts, listeningHistory }); 
   useEffect(() => {
-    stateRefs.current = { currentTrack, viewTracks, isShuffle, loopMode, progress, queue, autoplayBlacklist, trackCuts }; 
-  }, [currentTrack, viewTracks, isShuffle, loopMode, progress, queue, autoplayBlacklist, trackCuts]); 
+    stateRefs.current = { currentTrack, viewTracks, isShuffle, loopMode, progress, queue, autoplayBlacklist, trackCuts, listeningHistory }; 
+  }, [currentTrack, viewTracks, isShuffle, loopMode, progress, queue, autoplayBlacklist, trackCuts, listeningHistory]); 
 
 // --- SINCRONIZACIÓN DE VOLUMEN (GAIN STAGING AAA) ---
   useEffect(() => {

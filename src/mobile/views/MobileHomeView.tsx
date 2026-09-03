@@ -9,7 +9,7 @@ import {
   User,
   Clock,
   Flame,
-  Disc3,
+  Disc3, Cloud,
   RefreshCw,
   RotateCcw,
 } from 'lucide-react';
