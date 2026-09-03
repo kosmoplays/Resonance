@@ -250,10 +250,7 @@ export function MainContent({
                         <div className="flex items-center gap-4">
                           <img src={user.avatar_url?.replace('-large', '-t50x50') || 'https://placehold.co/50x50/1a1a1a/333333?text=USER'} alt={user.username} className="w-12 h-12 rounded-full object-cover shadow-md" />
                           <div className="flex flex-col">
-                            <span className="text-white font-bold group-hover:text-emerald-400 transition-colors">{user.username || user.name}</span>
-                            <span className="text-xs text-neutral-400">
-                              Artista
-                            </span>
+                            <span className="text-lg font-black text-white group-hover:text-emerald-400 transition-colors tracking-tight">{user.username || user.name}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity pr-4">
@@ -306,7 +303,16 @@ export function MainContent({
               />
             ) : (
               <header className="px-10 pt-16 pb-8 flex-shrink-0 w-full max-w-5xl mx-auto relative z-[60]">
-                <h1 className="text-5xl font-black text-white tracking-tight mb-4 truncate drop-shadow-xl">{viewTitle}</h1>
+                <div className="flex items-end gap-6 mb-4">
+                  {activeResonancePlaylist?.artwork_url && (
+                    <img 
+                      src={activeResonancePlaylist.artwork_url.replace('-large', '-t500x500')} 
+                      alt={activeResonancePlaylist.title}
+                      className="w-40 h-40 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] object-cover border border-white/10"
+                    />
+                  )}
+                  <h1 className="text-5xl font-black text-white tracking-tight truncate drop-shadow-xl flex-1 pb-2">{viewTitle}</h1>
+                </div>
                 <div className="flex items-center w-full gap-4 text-sm font-medium text-neutral-300 drop-shadow-md">
                   <span>{viewTracks.length} canciones</span>
                   {(isLoadingTracks || isSearching) && (

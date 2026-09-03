@@ -275,12 +275,12 @@ export function MobileFullPlayer({
         </header>
 
         {/* MAIN BODY SWITCHER */}
-        <div className="flex-1 flex flex-col min-h-0 overflow-hidden my-2">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden mt-0 mb-6">
           {/* TAB 1: PLAYER HERO VIEW */}
           {activeTab === 'player' && (
-            <div className="flex-1 flex flex-col justify-between overflow-hidden animate-in fade-in duration-200">
+            <div className="flex-1 flex flex-col justify-between overflow-hidden animate-in fade-in duration-200 pb-2">
               {/* ARTWORK CARD */}
-              <div className="flex-1 flex items-center justify-center py-2 relative min-h-0">
+              <div className="flex-1 flex items-center justify-center pt-0 pb-4 relative min-h-0">
                 <div
                   onClick={handleArtworkTap}
                   className="relative w-full max-w-[320px] aspect-square rounded-[32px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-white/10 active:scale-[0.98] transition-transform cursor-pointer"

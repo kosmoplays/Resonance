@@ -49,6 +49,8 @@ interface PlayerState {
   autoplayBlacklist: string[];
   localTracks: Track[];
   listeningHistory: Track[];
+  pinnedHomeCards: { type: 'likes' | 'sc' | 'yt' | 'custom', id?: string, title?: string }[];
+  setPinnedHomeCards: (cards: { type: 'likes' | 'sc' | 'yt' | 'custom', id?: string, title?: string }[]) => void;
 
   // MUTADORES
   loadLocalTracks: () => Promise<void>;
@@ -102,6 +104,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   loopMode: 0,
   viewTracks: [],
   viewPlaylists: [],
+  pinnedHomeCards: JSON.parse(localStorage.getItem('resonance_pinned_cards') || '[{"type":"likes"},{"type":"sc"}]'),
+  setPinnedHomeCards: (cards) => {
+    localStorage.setItem('resonance_pinned_cards', JSON.stringify(cards));
+    set({ pinnedHomeCards: cards });
+  },
   queue: [],
   activePanel: 'none',
   autoplayBlacklist: (() => {

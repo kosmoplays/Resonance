@@ -336,19 +336,46 @@ const playNext = useCallback((isAuto?: any) => {
       return;
     }
 
-    const { autoplayBlacklist } = stateRefs.current;
+    const { autoplayBlacklist, listeningHistory } = stateRefs.current;
     let nextIndex = 0;
     let attempts = 0;
     let foundValid = false;
 
     if (isShuffle) {
-      while (attempts < activeList.length) {
-        nextIndex = Math.floor(Math.random() * activeList.length);
-        if (!autoplayBlacklist.includes(String(activeList[nextIndex].id))) { foundValid = true; break; }
+      const recentIds = new Set((listeningHistory || []).slice(0, 3).map((t: any) => String(t.id)));
+      let bestIndex = -1;
+      while (attempts < activeList.length * 3) {
+        let tempIndex = Math.floor(Math.random() * activeList.length);
+        const trackIdStr = String(activeList[tempIndex].id);
+        
+        if (!autoplayBlacklist.includes(trackIdStr)) {
+          bestIndex = tempIndex;
+          if (!recentIds.has(trackIdStr)) {
+             nextIndex = tempIndex;
+             foundValid = true;
+             break;
+          }
+        }
         attempts++;
+      }
+      if (!foundValid && bestIndex !== -1) {
+         nextIndex = bestIndex;
+         foundValid = true;
       }
     } else {
       const currentIndex = activeList.findIndex(t => t.id === currentTrack?.id);
+      
+      if (currentIndex === -1 && activeList.length > 0) {
+        // La canción actual no está en la lista (e.g. Autoplay previo). Continuamos el bucle de Autoplay
+        const isAutoplay = usePlayerStore.getState().isAutoplayEnabled;
+        if (isAutoplay && currentTrack) {
+          triggerSmartAutoplay(currentTrack);
+        } else {
+          setIsPlaying(false);
+        }
+        return;
+      }
+
       nextIndex = currentIndex + 1;
 
       while (attempts < activeList.length) {
@@ -759,7 +786,6 @@ const playNext = useCallback((isAuto?: any) => {
        ytWidgetRef.current = new (window as any).YT.Player('yt-player-container', {
           height: '200',
           width: '200',
-          host: 'https://www.youtube-nocookie.com',
           playerVars: { 
             autoplay: 1, 
             controls: 0, 

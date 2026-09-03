@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetch as tauriFetch } from '@tauri-apps/plugin-http';
-import { Bell, Clock, Play, Volume2, Cloud, CheckCheck, Disc3, UserPlus, Info, Sparkles } from "lucide-react";
+import { Bell, Clock, Play, Volume2, Cloud, CheckCheck, Disc3, UserPlus, Info, Sparkles, RefreshCw } from "lucide-react";
 import { usePlayerStore } from "../store/usePlayerStore";
 import { AutoScrollText } from "../components/AutoScrollText";
 
@@ -27,6 +27,7 @@ export function HomeView({ follows, likes, playTrack, openArtistProfile, openPla
   const [forYouArtists, setForYouArtists] = useState<any[]>([]);
   const [forYouTracks, setForYouTracks] = useState<any[]>([]);
   const [forYouPlaylists, setForYouPlaylists] = useState<any[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [algoReason, setAlgoReason] = useState<string>("");
   const [algoError, setAlgoError] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -240,9 +241,19 @@ export function HomeView({ follows, likes, playTrack, openArtistProfile, openPla
               });
 
             // Combinamos ambos mundos y seleccionamos los mejores
-            const combinedTracks = [...pureTracksSC, ...pureTracksYT]
-              .sort((a: any, b: any) => (b.playback_count || 0) - (a.playback_count || 0)) // Ordenamos lo encontrado por pura popularidad real
-              .slice(0, 14); // 2 filas de 7 perfectas
+            const rawCombinedTracks = [...pureTracksSC, ...pureTracksYT]
+              .sort((a: any, b: any) => (b.playback_count || 0) - (a.playback_count || 0));
+              
+            const artistCounts: Record<string, number> = {};
+            const combinedTracks = [];
+            for (const t of rawCombinedTracks) {
+              const artistName = (t.user?.username || t.artist || 'Desconocido').toLowerCase();
+              artistCounts[artistName] = (artistCounts[artistName] || 0) + 1;
+              if (artistCounts[artistName] <= 2) {
+                combinedTracks.push(t);
+              }
+              if (combinedTracks.length >= 14) break;
+            }
             
             setForYouTracks(combinedTracks);
             
@@ -257,7 +268,7 @@ export function HomeView({ follows, likes, playTrack, openArtistProfile, openPla
         };
 
         fetchForYouAlgorithm();
-      }, [likes, follows]);
+      }, [likes, follows, refreshKey]);
 
       const markAllAsRead = () => {
     const allIds = new Set(notifications.map(n => n.id));
@@ -434,13 +445,28 @@ export function HomeView({ follows, likes, playTrack, openArtistProfile, openPla
 
         {/* HEADER ALINEADO A LA IZQUIERDA RESPONSIVO */}
          <header className="flex flex-col items-start mb-12 relative z-10 text-left w-full">
-           <div className="flex items-center gap-5 mb-3">
-             <div className="p-3 bg-gradient-to-br from-[#3b82f6]/20 to-purple-500/20 rounded-2xl border border-[#3b82f6]/30 shadow-[0_0_30px_rgba(59,130,246,0.15)] shrink-0">
-               <Sparkles className="text-[#3b82f6]" size={28} />
+           <div className="flex items-center gap-5 mb-3 w-full justify-between">
+             <div className="flex items-center gap-5">
+               <div className="p-3 bg-gradient-to-br from-[#3b82f6]/20 to-purple-500/20 rounded-2xl border border-[#3b82f6]/30 shadow-[0_0_30px_rgba(59,130,246,0.15)] shrink-0">
+                 <Sparkles className="text-[#3b82f6]" size={28} />
+               </div>
+               <h2 className="text-4xl font-black text-white tracking-tight drop-shadow-xl">
+                 Para Ti
+               </h2>
              </div>
-             <h2 className="text-4xl font-black text-white tracking-tight drop-shadow-xl">
-               Para Ti
-             </h2>
+             
+             {/* BOTÓN REFRESCAR PARA TI */}
+             <button 
+               onClick={() => {
+                 setRefreshKey(k => k + 1);
+                 window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+               }}
+               className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition-all border border-white/5 shadow-sm active:scale-95 group"
+               title="Refrescar recomendaciones"
+               disabled={isLoadingForYou}
+             >
+               <RefreshCw size={20} className={isLoadingForYou ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-500"} />
+             </button>
            </div>
 
             {/* 🛡️ ml-0 md:ml-[76px]: El desfase de alineación solo se activa si hay espacio horizontal real en pantalla */}

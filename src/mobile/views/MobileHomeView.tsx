@@ -72,7 +72,8 @@ export function MobileHomeView({
     loadLibrary,
   } = scProps;
   const { playTrack } = audioProps;
-  const { currentTrack, isPlaying } = usePlayerStore();
+  const { currentTrack, isPlaying, pinnedHomeCards, setPinnedHomeCards } = usePlayerStore();
+  const [pinSlot, setPinSlot] = useState<number | null>(null);
   const { user } = useAuthStore();
 
   const [radarTracks, setRadarTracks] = useState<any[]>([]);
@@ -341,37 +342,95 @@ export function MobileHomeView({
             />
           </button>
         </div>
-      </header>
-
-      {/* QUICK SHORTCUTS GRID */}
+      </header>      {/* QUICK SHORTCUTS GRID */}
       <section className="grid grid-cols-2 gap-2.5">
-        {/* TUS ME GUSTA */}
-        <div
-          onClick={() => openView('Tus Me Gusta', likes)}
-          className="flex items-center gap-3 p-3 bg-gradient-to-br from-emerald-950/40 to-neutral-900/80 border border-emerald-500/20 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform shadow-md"
-        >
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
-            <Heart size={20} fill="currentColor" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-xs font-bold text-white truncate">Tus Me Gusta</h3>
-            <p className="text-[10px] text-emerald-400/80 font-semibold">{totalLikesCount} temas</p>
-          </div>
-        </div>
+        {[0, 1].map((index) => {
+          const cardConfig = pinnedHomeCards[index] || { type: index === 0 ? 'likes' : 'sc' };
+          
+          let title = "Vacio";
+          let subtitle = "";
+          let icon = <Disc3 size={20} fill="currentColor" />;
+          let colorTheme = "emerald";
+          let action = () => {};
+          
+          if (cardConfig.type === 'likes') {
+            title = "Tus Me Gusta";
+            subtitle = `${totalLikesCount} temas`;
+            icon = <Heart size={20} fill="currentColor" />;
+            colorTheme = "emerald";
+            action = () => openView('Tus Me Gusta', likes);
+          } else if (cardConfig.type === 'sc') {
+            title = "SoundCloud";
+            subtitle = `${scLikes?.length || 0} temas`;
+            icon = <Cloud size={20} fill="currentColor" />;
+            colorTheme = "amber";
+            action = () => openView('Me Gusta (SoundCloud)', scLikes);
+          } else if (cardConfig.type === 'yt') {
+            title = "YouTube";
+            subtitle = `${ytLikes?.length || 0} temas`;
+            icon = <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.13 1 12 1 12s0 3.87.46 5.58a2.78 2.78 0 0 0 1.94 2C5.12 20 12 20 12 20s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2C23 15.87 23 12 23 12s0-3.87-.46-5.58z"></path><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"></polygon></svg>;
+            colorTheme = "red";
+            action = () => openView('Me Gusta (YouTube)', ytLikes);
+          } else if (cardConfig.type === 'custom') {
+            const pl = resonancePlaylists.find(p => String(p.id) === String(cardConfig.id));
+            if (pl) {
+              title = pl.title;
+              subtitle = `${pl.track_count || 0} pistas`;
+              icon = pl.artwork_url ? <img src={pl.artwork_url} className="w-full h-full object-cover rounded-xl" alt="" /> : <Disc3 size={20} fill="currentColor" />;
+              colorTheme = "purple";
+              action = () => openView(pl.title, pl.tracks);
+            }
+          }
 
-        {/* SOUNDCLOUD LIKES */}
-        <div
-          onClick={() => openView('Me Gusta (SoundCloud)', scLikes)}
-          className="flex items-center gap-3 p-3 bg-gradient-to-br from-amber-950/40 to-neutral-900/80 border border-amber-500/20 rounded-2xl cursor-pointer active:scale-[0.98] transition-transform shadow-md"
-        >
-          <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 font-black text-xs">
-            SC
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-xs font-bold text-white truncate">SoundCloud</h3>
-            <p className="text-[10px] text-amber-400/80 font-semibold">{scLikes?.length || 0} temas</p>
-          </div>
-        </div>
+          const gradients: Record<string, string> = {
+            emerald: "from-emerald-950/40 to-neutral-900/80 border-emerald-500/20",
+            amber: "from-amber-950/40 to-neutral-900/80 border-amber-500/20",
+            red: "from-red-950/40 to-neutral-900/80 border-red-500/20",
+            purple: "from-purple-950/40 to-neutral-900/80 border-purple-500/20"
+          };
+          
+          const iconBgs: Record<string, string> = {
+            emerald: "bg-emerald-500/20 text-emerald-400",
+            amber: "bg-amber-500/20 text-amber-400",
+            red: "bg-red-500/20 text-red-400",
+            purple: "bg-purple-500/20 text-purple-400"
+          };
+
+          const textColors: Record<string, string> = {
+            emerald: "text-emerald-400/80",
+            amber: "text-amber-400/80",
+            red: "text-red-400/80",
+            purple: "text-purple-400/80"
+          };
+
+          return (
+            <div
+              key={index}
+              onClick={action}
+              onContextMenu={(e) => { e.preventDefault(); setPinSlot(index); }}
+              onTouchStart={(e) => {
+                // Long press logic
+                const timer = setTimeout(() => { setPinSlot(index); }, 600);
+                e.currentTarget.dataset.timer = timer.toString();
+              }}
+              onTouchEnd={(e) => {
+                clearTimeout(Number(e.currentTarget.dataset.timer));
+              }}
+              onTouchMove={(e) => {
+                clearTimeout(Number(e.currentTarget.dataset.timer));
+              }}
+              className={`flex items-center gap-3 p-3 bg-gradient-to-br border rounded-2xl cursor-pointer active:scale-[0.98] transition-transform shadow-md ${gradients[colorTheme] || gradients.emerald}`}
+            >
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-xs ${iconBgs[colorTheme] || iconBgs.emerald}`}>
+                {icon}
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-xs font-bold text-white truncate">{title}</h3>
+                <p className={`text-[10px] font-semibold truncate ${textColors[colorTheme] || textColors.emerald}`}>{subtitle}</p>
+              </div>
+            </div>
+          );
+        })}
       </section>
 
       {/* RELEASE RADAR SECTION */}
@@ -513,6 +572,79 @@ export function MobileHomeView({
             ))}
           </div>
         </section>
+      )}
+
+      {/* MODAL DE FIJAR PLAYLIST */}
+      {pinSlot !== null && (
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setPinSlot(null)} />
+          <div className="bg-[#181818] border border-white/10 w-full max-w-sm rounded-3xl p-5 relative z-10 shadow-2xl animate-in slide-in-from-bottom-10 fade-in">
+            <h3 className="text-lg font-black text-white mb-1">Elegir acceso directo</h3>
+            <p className="text-xs text-neutral-400 mb-4">Selecciona qué lista quieres fijar aquí.</p>
+            
+            <div className="space-y-2 max-h-[50vh] overflow-y-auto scrollbar-none pb-2">
+              <div
+                onClick={() => {
+                  const newPins = [...pinnedHomeCards];
+                  newPins[pinSlot] = { type: 'likes' };
+                  setPinnedHomeCards(newPins);
+                  setPinSlot(null);
+                }}
+                className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-xl cursor-pointer"
+              >
+                <Heart size={20} className="text-emerald-400" />
+                <span className="text-sm font-bold text-white">Tus Me Gusta</span>
+              </div>
+              <div
+                onClick={() => {
+                  const newPins = [...pinnedHomeCards];
+                  newPins[pinSlot] = { type: 'sc' };
+                  setPinnedHomeCards(newPins);
+                  setPinSlot(null);
+                }}
+                className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-xl cursor-pointer"
+              >
+                <Cloud size={20} className="text-amber-400" />
+                <span className="text-sm font-bold text-white">SoundCloud Likes</span>
+              </div>
+              <div
+                onClick={() => {
+                  const newPins = [...pinnedHomeCards];
+                  newPins[pinSlot] = { type: 'yt' };
+                  setPinnedHomeCards(newPins);
+                  setPinSlot(null);
+                }}
+                className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-xl cursor-pointer"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-red-500"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.13 1 12 1 12s0 3.87.46 5.58a2.78 2.78 0 0 0 1.94 2C5.12 20 12 20 12 20s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2C23 15.87 23 12 23 12s0-3.87-.46-5.58z"></path><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"></polygon></svg>
+                <span className="text-sm font-bold text-white">YouTube Likes</span>
+              </div>
+              
+              {resonancePlaylists.map(pl => (
+                <div
+                  key={pl.id}
+                  onClick={() => {
+                    const newPins = [...pinnedHomeCards];
+                    newPins[pinSlot] = { type: 'custom', id: pl.id };
+                    setPinnedHomeCards(newPins);
+                    setPinSlot(null);
+                  }}
+                  className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-xl cursor-pointer"
+                >
+                  <Disc3 size={20} className="text-purple-400" />
+                  <span className="text-sm font-bold text-white">{pl.title}</span>
+                </div>
+              ))}
+            </div>
+            
+            <button
+              onClick={() => setPinSlot(null)}
+              className="w-full mt-4 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl text-sm"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
