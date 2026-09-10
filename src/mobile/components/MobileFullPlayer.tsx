@@ -102,6 +102,28 @@ export function MobileFullPlayer({
 
   const [activeTab, setActiveTab] = useState<PlayerTab>('player');
   const [mounted, setMounted] = useState(false);
+  const [isImmersive, setIsImmersive] = useState(false);
+
+  useEffect(() => {
+    let timeout: any;
+    if (activeTab === 'lyrics') {
+      const resetImmersive = () => {
+        setIsImmersive(false);
+        clearTimeout(timeout);
+        timeout = setTimeout(() => setIsImmersive(true), 3000);
+      };
+      window.addEventListener('touchstart', resetImmersive, { passive: true });
+      window.addEventListener('click', resetImmersive, { passive: true });
+      resetImmersive();
+      return () => {
+        clearTimeout(timeout);
+        window.removeEventListener('touchstart', resetImmersive);
+        window.removeEventListener('click', resetImmersive);
+      };
+    } else {
+      setIsImmersive(false);
+    }
+  }, [activeTab]);
   const [showHeartPop, setShowHeartPop] = useState(false);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
@@ -243,7 +265,7 @@ export function MobileFullPlayer({
         onTouchEnd={handleTouchEnd}
       >
         {/* HEADER BAR */}
-        <header className="flex items-center justify-between py-2 flex-shrink-0">
+        <header className={`flex items-center justify-between py-2 flex-shrink-0 relative z-20 transition-all duration-700 ease-in-out ${isImmersive ? "opacity-0 -translate-y-8 pointer-events-none" : "opacity-100 translate-y-0"}`}>
           <button
             type="button"
             onClick={close}
@@ -670,7 +692,7 @@ export function MobileFullPlayer({
         </div>
 
         {/* BOTTOM MODE SELECTOR PILL */}
-        <nav className="w-full flex items-center justify-center gap-1 pt-2 pb-1 flex-shrink-0">
+        <nav className={`w-full flex items-center justify-center gap-1 pt-2 pb-1 flex-shrink-0 relative z-20 transition-all duration-700 ease-in-out ${isImmersive ? "opacity-0 translate-y-8 pointer-events-none" : "opacity-100 translate-y-0"}`}>
           <div className="flex items-center bg-white/10 backdrop-blur-xl p-1 rounded-2xl border border-white/10 shadow-lg">
             <button
               onClick={() => setActiveTab('player')}

@@ -314,16 +314,17 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
               audioRef.current.play().catch(()=>{});
             }
 
+            const playFn = isMobile ? 'cueVideoById' : 'loadVideoById';
             if (ytWidgetRef.current && ytReadyRef.current) {
-              ytWidgetRef.current.loadVideoById({ videoId: ytId });
+              ytWidgetRef.current[playFn]({ videoId: ytId });
               setTimeout(() => { try { ytWidgetRef.current.setVolume(usePlayerStore.getState().volume * 65); } catch(e){} }, 100);
             } else {
               let retries = 0;
               const playYT = () => {
                 if (latestTrackIdRef.current !== track.id) return;
                 if (ytWidgetRef.current && ytReadyRef.current) {
-                   console.log("🟢 [YOUTUBE IFRAME] Ejecutando loadVideoById tras espera.");
-                   ytWidgetRef.current.loadVideoById({ videoId: ytId });
+                   console.log("🟢 [YOUTUBE IFRAME] Ejecutando loadVideo tras espera.");
+                   ytWidgetRef.current[playFn]({ videoId: ytId });
                    setTimeout(() => { try { ytWidgetRef.current.setVolume(usePlayerStore.getState().volume * 65); } catch(e){} }, 100);
                 } else if (retries < 20) {
                    retries++;
@@ -870,7 +871,7 @@ const playNext = useCallback((isAuto?: any) => {
           height: '200',
           width: '200',
           playerVars: { 
-            autoplay: 1, 
+            autoplay: isMobile ? 0 : 1, 
             controls: 0, 
             disablekb: 1, 
             fs: 0, 
