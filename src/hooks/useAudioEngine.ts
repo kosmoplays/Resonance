@@ -8,16 +8,29 @@ const CLIENT_ID = "lmRjTI0FqeXygHMXc3hRzS7hth20PNk5";
 const getScToken = () => localStorage.getItem("soundcloud_oauth_token") || "";
 
 // Si un servidor no responde en 6 segundos, lo damos por muerto y seguimos con los demás
-const fetchWithTimeout = async (url: string, options: any = {}, timeoutMs = 6000) => {
+const fetchWithTimeout = async (url: string, options: any = {}, timeoutMs = 12000) => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  
+  const headers = {
+    ...options.headers,
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+  };
+
   try {
-    const res = await tauriFetch(url, { ...options, signal: controller.signal });
+    const res = await tauriFetch(url, { ...options, headers, signal: controller.signal });
     clearTimeout(timeoutId);
     return res;
   } catch (err) {
-    clearTimeout(timeoutId);
-    throw err;
+    console.warn(`tauriFetch failed for ${url}, falling back to window.fetch`, err);
+    try {
+      const res = await window.fetch(url, { ...options, headers, signal: controller.signal });
+      clearTimeout(timeoutId);
+      return res;
+    } catch (fallbackErr) {
+      clearTimeout(timeoutId);
+      throw fallbackErr;
+    }
   }
 };
 

@@ -556,9 +556,17 @@ export function MobileHomeView({
       {/* PARA TI / RECOMMENDATIONS */}
       {forYouTracks.length > 0 && (
         <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Flame size={16} className="text-amber-400" />
-            <h2 className="text-base font-bold text-white tracking-tight">Especial Para Ti</h2>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Flame size={16} className="text-amber-400" />
+              <h2 className="text-base font-bold text-white tracking-tight">Especial Para Ti</h2>
+            </div>
+            <button
+              onClick={() => fetchForYou()}
+              className="p-1.5 bg-white/5 hover:bg-white/10 rounded-full text-neutral-400 hover:text-white transition-all"
+            >
+              <RefreshCw size={14} />
+            </button>
           </div>
 
           <div className="space-y-1">
@@ -576,7 +584,7 @@ export function MobileHomeView({
 
       {/* MODAL DE FIJAR PLAYLIST */}
       {pinSlot !== null && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 pb-28">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setPinSlot(null)} />
           <div className="bg-[#181818] border border-white/10 w-full max-w-sm rounded-3xl p-5 relative z-10 shadow-2xl animate-in slide-in-from-bottom-10 fade-in">
             <h3 className="text-lg font-black text-white mb-1">Elegir acceso directo</h3>

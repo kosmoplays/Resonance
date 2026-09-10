@@ -210,8 +210,12 @@ export function MobileLibraryView({
                   className="flex items-center justify-between p-3.5 bg-white/5 hover:bg-white/10 active:bg-white/15 rounded-2xl border border-white/5 transition-all cursor-pointer group"
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center text-white shadow-md flex-shrink-0">
-                      <ListMusic size={22} />
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center text-white shadow-md flex-shrink-0 overflow-hidden">
+                      {pl.artwork_url ? (
+                        <img src={pl.artwork_url} className="w-full h-full object-cover" alt="" />
+                      ) : (
+                        <ListMusic size={22} />
+                      )}
                     </div>
                     <div className="min-w-0">
                       <h4 className="font-bold text-sm text-white truncate">{pl.title}</h4>
