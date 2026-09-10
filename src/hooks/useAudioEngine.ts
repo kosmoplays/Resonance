@@ -97,7 +97,7 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
         if (usePlayerStore.getState().isYoutubeIframeFallback && bestAnchor) {
           const rect = bestAnchor.getBoundingClientRect();
           container.style.opacity = '1';
-          container.style.zIndex = '50';
+          container.style.zIndex = '99999';
           container.style.pointerEvents = 'auto';
           container.style.borderRadius = getComputedStyle(bestAnchor).borderRadius || 'inherit';
           container.style.overflow = 'hidden';
@@ -188,7 +188,7 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
       const startVol = audio.volume;
       for (let i = 1; i <= 10; i++) {
         setTimeout(() => {
-          if (latestTrackIdRef.current !== track.id) return;
+          if (latestTrackIdRef.current !== track.id) return; forceYtVisible();
           if (audio) {
             audio.playbackRate = Math.max(0.4, 1 - (i * 0.06));
             audio.volume = Math.max(0, startVol - (startVol * (i / 10)));
@@ -315,6 +315,40 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
             }
 
             const playFn = isMobile ? 'cueVideoById' : 'loadVideoById';
+            
+            const forceYtVisible = () => {
+              const container = document.getElementById('yt-player-wrapper');
+              const anchors = document.querySelectorAll('.yt-visual-anchor');
+              let bestAnchor: any = null;
+              let maxArea = 0;
+              anchors.forEach(a => {
+                const rect = a.getBoundingClientRect();
+                const area = rect.width * rect.height;
+                if (area > maxArea) { maxArea = area; bestAnchor = a; }
+              });
+              if (container && bestAnchor) {
+                const rect = bestAnchor.getBoundingClientRect();
+                container.style.opacity = '1';
+                container.style.zIndex = '99999';
+                container.style.pointerEvents = 'auto';
+                container.style.borderRadius = getComputedStyle(bestAnchor).borderRadius || 'inherit';
+                container.style.overflow = 'hidden';
+                container.style.width = `${rect.width}px`;
+                container.style.height = `${rect.height}px`;
+                container.style.transform = `translate(${rect.left}px, ${rect.top}px)`;
+                container.style.bottom = 'auto';
+                container.style.right = 'auto';
+                const iframe = container.querySelector('iframe');
+                if (iframe) {
+                  iframe.style.width = '300%';
+                  iframe.style.height = '300%';
+                  iframe.style.transform = 'translate(-33.33%, -33.33%)';
+                  iframe.style.pointerEvents = 'auto';
+                }
+              }
+            };
+            forceYtVisible();
+
             if (ytWidgetRef.current && ytReadyRef.current) {
               ytWidgetRef.current[playFn]({ videoId: ytId });
               setTimeout(() => { try { ytWidgetRef.current.setVolume(usePlayerStore.getState().volume * 65); } catch(e){} }, 100);
@@ -886,7 +920,7 @@ const playNext = useCallback((isAuto?: any) => {
               // Asegurar referrerpolicy en el iframe creado
               try {
                 const iframe = document.querySelector('#yt-player-container iframe');
-                if (iframe) (iframe as HTMLElement).setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+                if (iframe) (iframe as HTMLElement).setAttribute('referrerpolicy', 'no-referrer');
               } catch (e) {}
             },
             onStateChange: (event: any) => {
