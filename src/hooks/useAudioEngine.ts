@@ -79,7 +79,7 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
   useEffect(() => {
     let raf: number;
     const syncYtVisual = () => {
-      const container = document.getElementById('yt-player-container');
+      const container = document.getElementById('yt-player-wrapper');
       const anchors = document.querySelectorAll('.yt-visual-anchor');
       // Find the largest anchor (the full player, if open, else mini player)
       let bestAnchor: any = null;
@@ -844,19 +844,24 @@ const playNext = useCallback((isAuto?: any) => {
        // BLINDAJE CONTRA HOT-RELOADS Y ERROR 153:
        // YouTube exige que el contenedor mida al menos 200x200 y no esté fuera de pantalla (-9999px)
        // para no considerarlo un bot/fraude publicitario.
-       let container = document.getElementById('yt-player-container');
-       if (!container) {
-         container = document.createElement('div');
-         container.id = 'yt-player-container';
-         container.style.position = 'fixed';
-         container.style.bottom = '0';
-         container.style.right = '0';
-         container.style.width = '200px';
-         container.style.height = '200px';
-         container.style.opacity = '0.001';
-         container.style.pointerEvents = 'none';
-         container.style.zIndex = '-9999';
-         document.body.appendChild(container);
+       let wrapper = document.getElementById('yt-player-wrapper');
+       if (!wrapper) {
+         wrapper = document.createElement('div');
+         wrapper.id = 'yt-player-wrapper';
+         wrapper.style.position = 'fixed';
+         wrapper.style.bottom = '0';
+         wrapper.style.right = '0';
+         wrapper.style.width = '200px';
+         wrapper.style.height = '200px';
+         wrapper.style.opacity = '0.001';
+         wrapper.style.pointerEvents = 'none';
+         wrapper.style.zIndex = '-9999';
+         
+         const innerContainer = document.createElement('div');
+         innerContainer.id = 'yt-player-container';
+         wrapper.appendChild(innerContainer);
+         
+         document.body.appendChild(wrapper);
        }
 
        // NO enviamos origin: window.location.origin porque en Tauri iOS es tauri://localhost
