@@ -188,7 +188,7 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
       const startVol = audio.volume;
       for (let i = 1; i <= 10; i++) {
         setTimeout(() => {
-          if (latestTrackIdRef.current !== track.id) return; forceYtVisible();
+          if (latestTrackIdRef.current !== track.id) return;
           if (audio) {
             audio.playbackRate = Math.max(0.4, 1 - (i * 0.06));
             audio.volume = Math.max(0, startVol - (startVol * (i / 10)));
@@ -356,6 +356,7 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
               let retries = 0;
               const playYT = () => {
                 if (latestTrackIdRef.current !== track.id) return;
+                forceYtVisible();
                 if (ytWidgetRef.current && ytReadyRef.current) {
                    console.log("🟢 [YOUTUBE IFRAME] Ejecutando loadVideo tras espera.");
                    ytWidgetRef.current[playFn]({ videoId: ytId });
