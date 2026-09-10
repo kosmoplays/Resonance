@@ -82,7 +82,7 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
       const container = document.getElementById('yt-player-container');
       const anchors = document.querySelectorAll('.yt-visual-anchor');
       // Find the largest anchor (the full player, if open, else mini player)
-      let bestAnchor: Element | null = null;
+      let bestAnchor: any = null;
       let maxArea = 0;
       anchors.forEach(a => {
         const rect = a.getBoundingClientRect();
