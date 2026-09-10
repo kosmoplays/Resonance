@@ -339,12 +339,16 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
                 container.style.bottom = 'auto';
                 container.style.right = 'auto';
                 const iframe = container.querySelector('iframe');
-                if (iframe) {
-                  iframe.style.width = '300%';
-                  iframe.style.height = '300%';
-                  iframe.style.transform = 'translate(-33.33%, -33.33%)';
-                  iframe.style.pointerEvents = 'auto';
-                }
+            if (iframe) {
+              iframe.style.position = 'absolute';
+              iframe.style.width = '400px';
+              iframe.style.height = '400px';
+              iframe.style.top = '50%';
+              iframe.style.left = '50%';
+              const scale = (rect.width * 3) / 400;
+              iframe.style.transform = `translate(-50%, -50%) scale(${scale})`;
+              iframe.style.pointerEvents = 'auto';
+            }
               }
             };
             forceYtVisible();
