@@ -531,57 +531,63 @@ export function MobileFullPlayer({
             </div>
           )}
 
-          {/* TAB 2: LIVE LYRICS VIEW */}
-          {activeTab === 'lyrics' && (
-            <div
-              className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-200 relative"
-              onTouchStart={(e) => e.stopPropagation()}
-              onTouchMove={(e) => e.stopPropagation()}
-              onTouchEnd={(e) => e.stopPropagation()}
-            >
-              <div className="flex-1 overflow-y-auto scroll-smooth py-12 px-4 text-center space-y-6 scrollbar-none">
-                {isLoadingLyrics ? (
-                  <div className="flex flex-col items-center justify-center h-full text-neutral-400 animate-pulse">
-                    <Mic2 size={36} className="mb-3 opacity-50 text-accent" />
-                    <p className="text-sm font-semibold">Sincronizando letras...</p>
-                  </div>
-                ) : Array.isArray(lyrics) && lyrics.length > 0 ? (
-                  lyrics.map((line: any, idx: number) => {
-                    const isActive = idx === activeLyricIndex;
-                    const isPast = idx < activeLyricIndex;
+          {/* TAB 2: LIVE LYRICS VIEW PREMIUM */}
+            {activeTab === 'lyrics' && (
+              <div
+                className="flex-1 w-full h-full flex flex-col overflow-hidden animate-in fade-in duration-200 relative"
+                onTouchStart={(e) => e.stopPropagation()}
+                onTouchMove={(e) => e.stopPropagation()}
+                onTouchEnd={(e) => e.stopPropagation()}
+              >
+                {/* Fade masks top/bottom for depth */}
+                <div className="absolute top-0 left-0 w-full h-16 bg-gradient-to-b from-neutral-950 to-transparent z-10 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-neutral-950 to-transparent z-10 pointer-events-none" />
+                
+                <div className="flex-1 w-full h-full overflow-y-auto overflow-x-hidden scroll-smooth py-32 px-4 text-center scrollbar-none">
+                  {isLoadingLyrics ? (
+                    <div className="flex flex-col items-center justify-center h-full text-neutral-400 animate-pulse">
+                      <Mic2 size={36} className="mb-3 opacity-50 text-accent" />
+                      <p className="text-sm font-semibold">Sincronizando letras...</p>
+                    </div>
+                  ) : Array.isArray(lyrics) && lyrics.length > 0 ? (
+                    <div className="w-full max-w-[680px] mx-auto pb-[50vh]">
+                      {lyrics.map((line: any, idx: number) => {
+                        const isActive = idx === activeLyricIndex;
+                        const isPast = idx < activeLyricIndex;
 
-                    return (
-                      <p
-                        key={idx}
-                        ref={isActive ? activeLyricRef : null}
-                        onClick={() => handleSeek(line.time)}
-                        className={`cursor-pointer transition-all duration-300 select-none px-2 break-words whitespace-normal max-w-full leading-snug font-bold text-lg origin-left ${
-                          isActive
-                            ? 'text-white scale-[1.15] drop-shadow-[0_0_20px_rgba(255,255,255,0.7)]'
-                            : isPast
-                            ? 'text-neutral-500 scale-100 hover:text-neutral-300'
-                            : 'text-neutral-600 scale-100 hover:text-neutral-400'
-                        }`}
-                      >
-                        {line.text || '♪'}
-                      </p>
-                    );
-                  })
-                ) : lyrics ? (
-                  <p className="text-base text-neutral-300 leading-relaxed whitespace-pre-wrap break-words px-4">
-                    {lyrics}
-                  </p>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full text-neutral-500">
-                    <Mic2 size={36} className="mb-3 opacity-30" />
-                    <p className="text-sm font-semibold">Letras no disponibles para esta pista</p>
-                  </div>
-                )}
+                        return (
+                          <p
+                            key={idx}
+                            ref={isActive ? activeLyricRef : null}
+                            onClick={() => handleSeek(line.time)}
+                            className={`cursor-pointer transition-all duration-500 ease-out select-none px-2 sm:px-6 break-words whitespace-normal w-full mx-auto block leading-snug ${
+                              isActive
+                                ? 'text-white text-2xl sm:text-3xl drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] my-8 py-2 font-black tracking-tight'
+                                : isPast
+                                ? 'text-neutral-400 text-lg sm:text-xl hover:text-neutral-200 my-4 opacity-70 font-bold'
+                                : 'text-neutral-500 text-lg sm:text-xl hover:text-neutral-300 my-4 opacity-40 font-bold'
+                            }`}
+                          >
+                            {line.text || '...'}
+                          </p>
+                        );
+                      })}
+                    </div>
+                  ) : lyrics ? (
+                    <p className="text-base text-neutral-300 leading-relaxed whitespace-pre-wrap break-words px-4 pb-12 w-full max-w-[680px] mx-auto">
+                      {lyrics}
+                    </p>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-neutral-500">
+                      <Mic2 size={36} className="mb-3 opacity-30" />
+                      <p className="text-sm font-semibold">Letras no disponibles para esta pista</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-
-          {/* TAB 3: QUEUE VIEW */}
+            )}
+  
+            {/* TAB 3: QUEUE VIEW */}
           {activeTab === 'queue' && (
             <div
               className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-200"
