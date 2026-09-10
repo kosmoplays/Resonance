@@ -111,7 +111,7 @@ export function PlayerFooter({ audioRef, iframeRef, playNext, playPrevious, togg
           {currentTrack ? (
             <>
               <div className="flex items-center min-w-0 flex-1">
-                <img src={currentTrack.artwork_url?.replace('-large', '-t50x50') || currentTrack.user?.avatar_url?.replace('-large', '-t50x50') || 'https://placehold.co/50x50/1a1a1a/333333?text=RN'} className="w-12 h-12 md:w-14 md:h-14 object-cover rounded shadow-md mr-3 md:mr-4 flex-shrink-0" alt="" />
+                <img src={currentTrack.artwork_url?.replace('-large', '-t50x50') || currentTrack.user?.avatar_url?.replace('-large', '-t50x50') || 'https://placehold.co/50x50/1a1a1a/333333?text=RN'} className="yt-visual-anchor w-12 h-12 md:w-14 md:h-14 object-cover rounded shadow-md mr-3 md:mr-4 flex-shrink-0" alt="" />
                 <div className="flex flex-col min-w-0 flex-1 pr-2">
                   {isMobile ? (
                     <p className="font-bold text-sm text-neutral-100 truncate w-full flex items-center gap-2 pr-2">

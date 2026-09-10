@@ -283,7 +283,7 @@ export function MobileFullPlayer({
               <div className="flex-1 flex items-center justify-center pt-0 pb-4 relative min-h-0">
                 <div
                   onClick={handleArtworkTap}
-                  className="relative w-full max-w-[320px] aspect-square rounded-[32px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-white/10 active:scale-[0.98] transition-transform cursor-pointer"
+                  className="yt-visual-anchor relative w-full max-w-[320px] aspect-square rounded-[32px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-white/10 active:scale-[0.98] transition-transform cursor-pointer"
                 >
                   <img
                     src={artwork}

@@ -126,7 +126,7 @@ export function MobileMiniPlayer({
         </div>
 
         {/* ARTWORK WITH GLOW */}
-        <div className="relative w-11 h-11 flex-shrink-0 rounded-xl overflow-hidden shadow-md bg-neutral-950 border border-white/10 mr-3">
+        <div className="yt-visual-anchor relative w-11 h-11 flex-shrink-0 rounded-xl overflow-hidden shadow-md bg-neutral-950 border border-white/10 mr-3">
           <img
             src={artwork}
             alt={currentTrack.title}

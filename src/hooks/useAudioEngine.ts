@@ -75,6 +75,71 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
     stateRefs.current = { currentTrack, viewTracks, isShuffle, loopMode, progress, queue, autoplayBlacklist, trackCuts, listeningHistory }; 
   }, [currentTrack, viewTracks, isShuffle, loopMode, progress, queue, autoplayBlacklist, trackCuts, listeningHistory]); 
 
+  // --- YT VISUAL ANCHOR TRACKER ---
+  useEffect(() => {
+    let raf: number;
+    const syncYtVisual = () => {
+      const container = document.getElementById('yt-player-container');
+      const anchors = document.querySelectorAll('.yt-visual-anchor');
+      // Find the largest anchor (the full player, if open, else mini player)
+      let bestAnchor: Element | null = null;
+      let maxArea = 0;
+      anchors.forEach(a => {
+        const rect = a.getBoundingClientRect();
+        const area = rect.width * rect.height;
+        if (area > maxArea) {
+          maxArea = area;
+          bestAnchor = a;
+        }
+      });
+
+      if (container) {
+        if (usePlayerStore.getState().isYoutubeIframeFallback && bestAnchor) {
+          const rect = bestAnchor.getBoundingClientRect();
+          container.style.opacity = '1';
+          container.style.zIndex = '50';
+          container.style.pointerEvents = 'auto';
+          container.style.borderRadius = getComputedStyle(bestAnchor).borderRadius || 'inherit';
+          container.style.overflow = 'hidden';
+          
+          container.style.width = `${rect.width}px`;
+          container.style.height = `${rect.height}px`;
+          container.style.transform = `translate(${rect.left}px, ${rect.top}px)`;
+          container.style.bottom = 'auto';
+          container.style.right = 'auto';
+
+          const iframe = container.querySelector('iframe');
+          if (iframe) {
+            // Scale up to cover black bars (16:9 to 1:1)
+            iframe.style.width = '300%';
+            iframe.style.height = '300%';
+            iframe.style.transform = 'translate(-33.33%, -33.33%)';
+            iframe.style.pointerEvents = 'auto';
+          }
+        } else {
+          container.style.opacity = '0.001';
+          container.style.zIndex = '-9999';
+          container.style.pointerEvents = 'none';
+          container.style.width = '200px';
+          container.style.height = '200px';
+          container.style.transform = 'none';
+          container.style.bottom = '0';
+          container.style.right = '0';
+          
+          const iframe = container.querySelector('iframe');
+          if (iframe) {
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.transform = 'none';
+          }
+        }
+      }
+      raf = requestAnimationFrame(syncYtVisual);
+    };
+    raf = requestAnimationFrame(syncYtVisual);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
 // --- SINCRONIZACIÓN DE VOLUMEN (GAIN STAGING AAA) ---
   useEffect(() => {
     if (useWidget) {
@@ -152,7 +217,7 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
     }
 
     setTrackUrl("");
-    setUseWidget(false);
+    setUseWidget(false); usePlayerStore.setState({ isYoutubeIframeFallback: false });
     activeWidgetRef.current = 'none';
 
     try { 
@@ -240,7 +305,7 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
             // 2. FALLBACK EMBEBIDO (Iframe)
             console.log("🟠 [YOUTUBE] Iniciando Iframe Fallback (Puede requerir Play manual en iOS)");
             setUseWidget(true);
-            activeWidgetRef.current = 'youtube';
+            activeWidgetRef.current = 'youtube'; usePlayerStore.setState({ isYoutubeIframeFallback: true });
             
             // 🛡️ MANTENER MEDIASESSION EN IOS: Alimentamos el audioRef con silencio para no perder los controles nativos
             if (audioRef.current) {

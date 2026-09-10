@@ -33,7 +33,7 @@ interface PlayerState {
   isMiniPlayer: boolean;
   viewUsers: any[];
   currentTrack: Track | null;
-  isPlaying: boolean;
+  isPlaying: boolean; isYoutubeIframeFallback: boolean;
   volume: number;
   progress: number;
   duration: number;
@@ -95,7 +95,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   isMiniPlayer: false,
   viewUsers: [],
   currentTrack: null,
-  isPlaying: false,
+  isPlaying: false, isYoutubeIframeFallback: false,
   volume: parseFloat(localStorage.getItem('resonance_volume') || '1'),
   progress: 0,
   duration: 0,
